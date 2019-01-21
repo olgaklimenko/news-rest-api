@@ -1,4 +1,4 @@
--- NOT NULL, DEFAULT, ON DELETE, ON UPDATE
+-- TODO: NOT NULL, DEFAULT, ON DELETE, ON UPDATE
 
 CREATE TABLE users(
     user_id serial PRIMARY KEY,
@@ -9,34 +9,16 @@ CREATE TABLE users(
     is_admin boolean DEFAULT false
     );
 
--- INSERT INTO courses(c_no, title, hours)
---     VALUES 
---         ('CS301', 'Базы данных', 30),
---         ('CS305', 'Сети ЭВМ', 60);
-
 CREATE TABLE authors(
     author_id serial PRIMARY KEY,
     user_id integer REFERENCES users NOT NULL,
     description text
     );
 
--- INSERT INTO students(s_id, name, start_year)
---     VALUES 
---         (1451, 'Анна', 2014),
---         (1432, 'Виктор', 2014),
---         (1556, 'Нина', 2015);
-
 CREATE TABLE tags(
     tag_id serial PRIMARY KEY,
     name text
     );
-
--- INSERT INTO exams(s_id, c_no, score)
---     VALUES 
---         (1451, 'CS301', 5),
---         (1556, 'CS301', 5),
---         (1451, 'CS305', 5),
---         (1432, 'CS305', 4);
 
 CREATE TABLE categories(
     category_id serial PRIMARY KEY,

@@ -1,5 +1,4 @@
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeOperators #-}
 
 module Models.User where
 
@@ -18,6 +17,12 @@ data User = User {
   userIsAdmin :: Bool
 } deriving Show
 
+data UserRaw = UserRaw {
+  userRawName :: T.Text,
+  userRawSurname :: T.Text,
+  userRawAvatar :: T.Text
+}
+
 instance FromRow User where
   fromRow = User <$> field <*> field <*> field <*> field <*> field <*> field
 
@@ -31,9 +36,5 @@ instance ToRow User where
     , toField userIsAdmin
     ]
 
-data UserRaw = UserRaw {
-    userRawName :: T.Text,
-    userRawSurname :: T.Text,
-    userRawAvatar :: T.Text
-    }
+
 

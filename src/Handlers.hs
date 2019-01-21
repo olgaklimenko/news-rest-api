@@ -11,7 +11,7 @@ import           Database
 import           Serializer
 import           Data.Aeson
 import           Queries.Author
-
+import           Queries.Tag
 type Handler = Request -> IO Response
 
 createAuthorHandler :: Handler
@@ -24,7 +24,6 @@ createAuthorHandler req = do
   createAuthor authorData = do
     (user, author) <- addAuthorToDB $ requestToAuthor authorData
     let authorJSON = encode $ authorToResponse (user, author)
-    BC.putStrLn "Students page accessed"
     pure $ responseLBS status200
                        [("Content-Type", "application/json")]
                        authorJSON
@@ -41,3 +40,6 @@ getAuthorsListHandler req = do
   pure $ responseLBS status200
                      [("Content-Type", "application/json")]
                      printableAuthors
+
+createTagHandler :: Handler
+createTagHandler req = undefined

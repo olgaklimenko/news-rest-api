@@ -11,15 +11,19 @@ import           Handlers
 data Route = PathRoute Text Route | DynamicRoute Text Route | MethodRoute ByteString
 
 createAuthorRoute :: Route
-createAuthorRoute = PathRoute "api" $ PathRoute "author" $ MethodRoute "POST"
+createAuthorRoute = PathRoute "api" $ PathRoute "authors" $ MethodRoute "POST"
 
 getAuthorsListRoute :: Route
 getAuthorsListRoute = PathRoute "api" $ PathRoute "authors" $ MethodRoute "GET"
+
+createTagRoute :: Route
+createTagRoute = PathRoute "api" $ PathRoute "tags" $ MethodRoute "POST"
 
 routes :: [(Route, Handler)]
 routes =
   [ (createAuthorRoute  , createAuthorHandler)
   , (getAuthorsListRoute, getAuthorsListHandler)
+  , (createTagRoute, createTagHandler)
   , ( MethodRoute "GET"
     , const $ pure $ responseLBS status200 [("Content-Type", "text/html")] "Ok"
     )

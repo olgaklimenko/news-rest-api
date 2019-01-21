@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeOperators #-}
 module Queries.User where
 import           Database.PostgreSQL.Simple
 
