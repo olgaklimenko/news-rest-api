@@ -6,7 +6,8 @@ import           Data.Aeson
 import qualified Data.Text                     as T
 import           Data.Time
 import           Database
-
+import Models.User
+import Models.Author
 
 data CreateAuthorRequest = CreateAuthorRequest {
   createAuthorRequestName :: T.Text,

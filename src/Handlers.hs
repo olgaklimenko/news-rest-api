@@ -10,7 +10,7 @@ import qualified Data.Text                     as T
 import           Database
 import           Serializer
 import           Data.Aeson
-
+import           Queries.Author
 
 type Handler = Request -> IO Response
 
