@@ -6,7 +6,7 @@ import           Data.ByteString
 import           Data.Text
 import           Network.Wai
 import           Network.HTTP.Types
-import           Handlers
+import Handlers.Handlers
 
 data Route = PathRoute Text Route | DynamicRoute Text Route | MethodRoute ByteString
 
@@ -19,11 +19,15 @@ getAuthorsListRoute = PathRoute "api" $ PathRoute "authors" $ MethodRoute "GET"
 createTagRoute :: Route
 createTagRoute = PathRoute "api" $ PathRoute "tags" $ MethodRoute "POST"
 
+createCategoryRoute :: Route
+createCategoryRoute = PathRoute "api" $ PathRoute "categories" $ MethodRoute "POST"
+
+
 routes :: [(Route, Handler)]
 routes =
   [ (createAuthorRoute  , createAuthorHandler)
   , (getAuthorsListRoute, getAuthorsListHandler)
-  , (createTagRoute, createTagHandler)
+  , (createCategoryRoute, createCategoryHandler)
   , ( MethodRoute "GET"
     , const $ pure $ responseLBS status200 [("Content-Type", "text/html")] "Ok"
     )

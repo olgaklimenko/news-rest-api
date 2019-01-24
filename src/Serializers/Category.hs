@@ -1,0 +1,59 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE FlexibleInstances #-}
+
+module Serializers.Category where
+
+import           Data.Aeson
+import qualified Data.Text                     as T
+import           Data.Time
+import           Database
+import           Models.Category
+import           Data.Functor.Identity
+
+data CategoryRequestT f = CategoryRequestT {
+  categoryRequestName :: f T.Text,
+  categoryRequestParentId :: f (Maybe Integer)
+}
+
+newtype CreateCategoryRequest = CreateCategoryRequest (CategoryRequestT Identity)
+
+-- -- with newtype
+-- example = CreateCategoryRequest
+--   $ CategoryRequestT (Identity "name") (Identity $ Just 12)
+
+-- -- with type
+-- example2 = CategoryRequestT (Identity "name") (Identity $ Just 12)
+
+-- type CreateCatRequest = (CategoryRequestT Identity)
+
+-- instance FromJSON (CategoryRequestT Identity) where
+--   parseJSON = withObject "CreateCatRequest" $ \v ->
+--     CategoryRequestT
+--       <$> (Identity <$> (v .: "name"))
+--       <*> (Identity <$> (v .: "parent_id"))
+
+instance FromJSON CreateCategoryRequest where
+  parseJSON = withObject "CreateCategoryRequest" $ \v ->
+    fmap CreateCategoryRequest
+      $   CategoryRequestT
+      <$> (Identity <$> (v .: "name"))
+      <*> (Identity <$> (v .: "parent_id"))
+
+newtype CreateCategoryResponse = CreateCategoryResponse Category
+
+instance ToJSON CreateCategoryResponse where
+  toJSON (CreateCategoryResponse Category {..}) = object
+    [ "category_id" .= categoryId
+    , "name" .= categoryName
+    , "parent_id" .= categoryParentId
+    ]
+
+    
+requestToCategory :: CreateCategoryRequest -> CategoryRaw
+requestToCategory (CreateCategoryRequest CategoryRequestT {..}) = CategoryRaw
+  (runIdentity categoryRequestName)
+  (runIdentity categoryRequestParentId)
+
+categoryToResponse :: Category -> CreateCategoryResponse
+categoryToResponse = CreateCategoryResponse

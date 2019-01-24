@@ -9,12 +9,12 @@ import           Data.Text                     as T
 data Category = Category {
     categoryId :: Integer,
     categoryName :: T.Text,
-    categoryParentId :: Integer
+    categoryParentId :: Maybe Integer
 }
 
 data CategoryRaw = CategoryRaw {
     categoryRawName :: T.Text,
-    categoryRawParentId :: Integer
+    categoryRawParentId :: Maybe Integer
 }
 
 instance FromRow Category where
@@ -23,3 +23,4 @@ instance FromRow Category where
 instance ToRow Category where
     toRow Category {..} =
         [toField categoryId, toField categoryName, toField categoryParentId]
+
