@@ -38,7 +38,7 @@ instance FromJSON CreateCategoryRequest where
     fmap CreateCategoryRequest
       $   CategoryRequestT
       <$> (Identity <$> (v .: "name"))
-      <*> (Identity <$> (v .: "parent_id"))
+      <*> (Identity <$> (v .:? "parent_id"))
 
 newtype CreateCategoryResponse = CreateCategoryResponse Category
 
@@ -49,7 +49,7 @@ instance ToJSON CreateCategoryResponse where
     , "parent_id" .= categoryParentId
     ]
 
-    
+
 requestToCategory :: CreateCategoryRequest -> CategoryRaw
 requestToCategory (CreateCategoryRequest CategoryRequestT {..}) = CategoryRaw
   (runIdentity categoryRequestName)
