@@ -77,3 +77,12 @@ createCategoryHandler req = do
                        [("Content-Type", "application/json")]
                        categoryJSON
 
+getCategoriesListHandler :: Handler
+getCategoriesListHandler req = do
+  categories <- getCategoriesList
+  let categoriesJson = encode $ categoryToResponse <$> categories
+
+  putStrLn "Students page accessed"
+  pure $ responseLBS status200
+                     [("Content-Type", "application/json")]
+                     categoriesJson

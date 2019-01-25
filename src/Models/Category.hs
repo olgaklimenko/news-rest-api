@@ -10,7 +10,7 @@ data Category = Category {
     categoryId :: Integer,
     categoryName :: T.Text,
     categoryParentId :: Maybe Integer
-}
+} deriving Show
 
 data CategoryRaw = CategoryRaw {
     categoryRawName :: T.Text,
@@ -23,4 +23,3 @@ instance FromRow Category where
 instance ToRow Category where
     toRow Category {..} =
         [toField categoryId, toField categoryName, toField categoryParentId]
-

@@ -22,12 +22,15 @@ createTagRoute = PathRoute "api" $ PathRoute "tags" $ MethodRoute "POST"
 createCategoryRoute :: Route
 createCategoryRoute = PathRoute "api" $ PathRoute "categories" $ MethodRoute "POST"
 
+getCategoriesListRoute :: Route
+getCategoriesListRoute = PathRoute "api" $ PathRoute "categories" $ MethodRoute "GET"
 
 routes :: [(Route, Handler)]
 routes =
   [ (createAuthorRoute  , createAuthorHandler)
   , (getAuthorsListRoute, getAuthorsListHandler)
   , (createCategoryRoute, createCategoryHandler)
+  , (getCategoriesListRoute, getCategoriesListHandler)
   , ( MethodRoute "GET"
     , const $ pure $ responseLBS status200 [("Content-Type", "text/html")] "Ok"
     )

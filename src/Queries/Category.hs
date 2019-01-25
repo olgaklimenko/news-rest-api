@@ -42,3 +42,11 @@ insertCategoryQuery CategoryRaw {..} =
     <> ") VALUES ("
     <> values
     <> ") RETURNING category_id, name, parent_id"
+
+
+getCategoriesList :: IO [Category]
+getCategoriesList = bracket (connect connectInfo) close $ \conn ->
+  query conn selectQuery ()
+  where
+    selectQuery = 
+      "SELECT * FROM categories;"
