@@ -74,7 +74,7 @@ updateCategoryQuery cId CategoryRawPartial {..} =
   let toQuery  = fromString . T.unpack
       nameExpr = maybe "" (\name -> "name = '" <> name <> "'") crpName
       parentIdExpr =
-          maybe "NOTHING" (\pId -> "parent_id = '" <> show pId <> "'") crpParentId
+          maybe "" (\pId -> "parent_id = '" <> show pId <> "'") crpParentId
       params =
           toQuery
             . T.intercalate ","
