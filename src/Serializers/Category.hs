@@ -66,8 +66,6 @@ data NestedCategoryResponse = NestedCategoryResponse {
   crId :: Integer,
   crName :: T.Text
 }
-Either () Text ~ Maybe Text
-
 
 instance ToJSON NestedCategoryResponse where
   toJSON NestedCategoryResponse {..} = object
