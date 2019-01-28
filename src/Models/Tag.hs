@@ -15,6 +15,10 @@ data TagRaw = TagRaw {
     tagRawName :: T.Text
 } deriving Show
 
+data TagRawPartial = TagRawPartial {
+    tagRawPartialName :: Maybe T.Text
+} deriving Show
+
 instance FromRow Tag where
     fromRow = Tag <$> field <*> field
 

@@ -8,7 +8,7 @@ import qualified Data.Text                     as T
 import           Models.Category
 import           Database
 import           Data.String
-
+import           Helpers
 createCategory :: CategoryRaw -> IO Category
 createCategory category = bracket (connect connectInfo) close $ \conn -> do
   (category : _) <- query conn (insertCategoryQuery category) ()
@@ -17,54 +17,71 @@ createCategory category = bracket (connect connectInfo) close $ \conn -> do
 
 insertCategoryQuery :: CategoryRaw -> Query
 insertCategoryQuery CategoryRaw {..} =
-  let
-    toQuery  = fromString . T.unpack
-    nameFieldExpr = "name"
-    parentIdFieldExpr = maybe "" (const "parent_id") categoryRawParentId
+  let toQuery           = fromString . T.unpack
+      nameFieldExpr     = "name"
+      parentIdFieldExpr = maybe "" (const "parent_id") categoryRawParentId
 
-    nameValueExpr = "'" <> categoryRawName <> "'"
-    parentIdValueExpr = maybe "" show categoryRawParentId
+      nameValueExpr     = "'" <> categoryRawName <> "'"
+      parentIdValueExpr = maybe "" show categoryRawParentId
 
-    fields = 
-        toQuery
-        . T.intercalate ","
-        . filter (not . T.null)
-        $ [nameFieldExpr, T.pack parentIdFieldExpr]
+      fields =
+          toQuery
+            . T.intercalate ","
+            . filter (not . T.null)
+            $ [nameFieldExpr, T.pack parentIdFieldExpr]
 
-    values = 
-        toQuery
-        . T.intercalate ","
-        . filter (not . T.null)
-        $ [nameValueExpr, T.pack parentIdValueExpr]
-  in
-    "INSERT INTO categories ("
-    <> fields
-    <> ") VALUES ("
-    <> values
-    <> ") RETURNING category_id, name, parent_id"
+      values =
+          toQuery
+            . T.intercalate ","
+            . filter (not . T.null)
+            $ [nameValueExpr, T.pack parentIdValueExpr]
+  in  "INSERT INTO categories ("
+        <> fields
+        <> ") VALUES ("
+        <> values
+        <> ") RETURNING category_id, name, parent_id"
 
 
 getCategoriesList :: IO [Category]
-getCategoriesList = bracket (connect connectInfo) close $ \conn ->
-  query conn selectQuery ()
-  where
-    selectQuery = 
-      "SELECT * FROM categories;"
+getCategoriesList = bracket (connect connectInfo) close
+  $ \conn -> query conn selectQuery ()
+  where selectQuery = "SELECT * FROM categories;"
 
-
-getCategoryWithParents ::  Maybe Integer -> IO [Category]
+getCategoryWithParents :: Maybe Integer -> IO [Category]
 getCategoryWithParents Nothing = pure []
-getCategoryWithParents pId = reverse <$> go [] pId
-  where
-    go acc Nothing = pure acc
-    go acc (Just pId) = do
-      pCat <- getCategory pId
-      go (pCat : acc) (categoryParentId pCat)
+getCategoryWithParents pId     = reverse <$> go [] pId
+ where
+  go acc Nothing    = pure acc
+  go acc (Just pId) = do
+    pCat <- getCategory pId
+    go (pCat : acc) (categoryParentId pCat)
 
 getCategory :: Integer -> IO Category
 getCategory categoryId = bracket (connect connectInfo) close $ \conn -> do
   (category : _) <- query conn selectQuery [categoryId]
   pure category
-  where
-    selectQuery = 
-      "SELECT * FROM categories where category_id = ?;"
+  where selectQuery = "SELECT * FROM categories where category_id = ?;"
+
+updateCategory :: Integer -> CategoryRawPartial -> IO Category
+updateCategory cId category = bracket (connect connectInfo) close $ \conn -> do
+  let log = updateCategoryQuery cId category
+  print log
+  res <- query conn (updateCategoryQuery cId category) ()
+  pure $ head res
+
+updateCategoryQuery :: Integer -> CategoryRawPartial -> Query
+updateCategoryQuery cId CategoryRawPartial {..} =
+  let toQuery  = fromString . T.unpack
+      nameExpr = maybe "" (\name -> "name = '" <> name <> "'") crpName
+      parentIdExpr =
+          maybe "NOTHING" (\pId -> "parent_id = '" <> show pId <> "'") crpParentId
+      params =
+          toQuery
+            . T.intercalate ","
+            . filter (not . T.null)
+            $ [nameExpr, T.pack parentIdExpr]
+  in  "UPDATE categories SET "
+        <> params
+        <> " WHERE category_id="
+        <> toQuery (T.pack $ show cId)
+        <> " RETURNING category_id, name, parent_id"

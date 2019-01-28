@@ -17,6 +17,11 @@ data CategoryRaw = CategoryRaw {
     categoryRawParentId :: Maybe Integer
 }
 
+data CategoryRawPartial = CategoryRawPartial {
+    crpName :: Maybe T.Text,
+    crpParentId :: Maybe Integer
+}
+
 instance FromRow Category where
     fromRow = Category <$> field <*> field <*> field
 

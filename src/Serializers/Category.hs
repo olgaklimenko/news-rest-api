@@ -33,6 +33,7 @@ newtype CreateCategoryRequest = CreateCategoryRequest (CategoryRequestT Identity
 --       <$> (Identity <$> (v .: "name"))
 --       <*> (Identity <$> (v .: "parent_id"))
 
+
 instance FromJSON CreateCategoryRequest where
   parseJSON = withObject "CreateCategoryRequest" $ \v ->
     fmap CreateCategoryRequest
@@ -48,7 +49,6 @@ instance ToJSON CreateCategoryResponse where
     , "name" .= categoryName
     , "parent_id" .= categoryParentId
     ]
-
 
 requestToCategory :: CreateCategoryRequest -> CategoryRaw
 requestToCategory (CreateCategoryRequest CategoryRequestT {..}) = CategoryRaw
@@ -73,19 +73,33 @@ instance ToJSON NestedCategoryResponse where
     , "name" .= ncrName
     , "parent_category" .= ncrParentCategory
     ]
-  toJSON CategoryResponse {..} = object
-    [ "category_id" .= crId
-    , "name" .= crName
-    ]
+  toJSON CategoryResponse {..} =
+    object ["category_id" .= crId, "name" .= crName]
 
 categoriesToNestedCategoryResponse
   :: Category -> [Category] -> NestedCategoryResponse
-categoriesToNestedCategoryResponse current [] = CategoryResponse
-  { crId             = categoryId current
-  , crName           = categoryName current
-  }
+categoriesToNestedCategoryResponse current [] =
+  CategoryResponse { crId = categoryId current, crName = categoryName current }
 categoriesToNestedCategoryResponse current (x1 : xs) = NestedCategoryResponse
   { ncrId             = categoryId current
   , ncrName           = categoryName current
   , ncrParentCategory = categoriesToNestedCategoryResponse x1 xs
   }
+
+newtype UpdateCategoryRequest = UpdateCategoryRequest (CategoryRequestT Maybe)
+
+instance FromJSON UpdateCategoryRequest where
+  parseJSON = withObject "UpdateCategoryRequest" $ \v ->
+    fmap UpdateCategoryRequest
+      $   CategoryRequestT
+      <$> v
+      .:? "name"
+      <*> v
+      .:? "parent_id"
+
+requestToUpdateCategory :: UpdateCategoryRequest -> CategoryRawPartial
+requestToUpdateCategory (UpdateCategoryRequest CategoryRequestT { categoryRequestName = name, categoryRequestParentId = Just pId })
+  = CategoryRawPartial { crpName = name, crpParentId = pId }
+requestToUpdateCategory (UpdateCategoryRequest CategoryRequestT { categoryRequestName = name, categoryRequestParentId = Nothing })
+  = CategoryRawPartial { crpName = name, crpParentId = Nothing }
+-- TODO: Use join from monad

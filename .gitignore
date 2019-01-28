@@ -45,3 +45,5 @@ news-rest-api.cabal
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+settings.json

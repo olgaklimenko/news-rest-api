@@ -28,14 +28,18 @@ getCategoriesListRoute = PathRoute "api" $ PathRoute "categories" $ MethodRoute 
 getCategoryWithParentsRoute :: Route
 getCategoryWithParentsRoute = PathRoute "api" $ PathRoute "categories" $ DynamicRoute "pk" $ MethodRoute "GET"
 
+updateCategoryRoute :: Route
+updateCategoryRoute = PathRoute "api" $ PathRoute "categories" $ DynamicRoute "pk" $ MethodRoute "PATCH"
 
 routes :: [(Route, Handler)]
 routes =
   [ (createAuthorRoute  , createAuthorHandler)
   , (getAuthorsListRoute, getAuthorsListHandler)
+  , (createTagRoute, createTagHandler)
   , (createCategoryRoute, createCategoryHandler)
   , (getCategoriesListRoute, getCategoriesListHandler)
   , (getCategoryWithParentsRoute, getCategoryWithParentsHandler)
+  , (updateCategoryRoute, updateCategoryHandler)
   , ( MethodRoute "GET"
     , const $ pure $ responseLBS status200 [("Content-Type", "text/html")] "Ok"
     )
