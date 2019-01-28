@@ -20,3 +20,6 @@ instance FromRow Tag where
 
 instance ToRow Tag where
     toRow Tag {..} = [toField tagId, toField tagName]
+
+instance ToRow TagRaw where
+    toRow TagRaw {..} = [toField tagRawName]

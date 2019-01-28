@@ -50,3 +50,21 @@ getCategoriesList = bracket (connect connectInfo) close $ \conn ->
   where
     selectQuery = 
       "SELECT * FROM categories;"
+
+
+getCategoryWithParents ::  Maybe Integer -> IO [Category]
+getCategoryWithParents Nothing = pure []
+getCategoryWithParents pId = reverse <$> go [] pId
+  where
+    go acc Nothing = pure acc
+    go acc (Just pId) = do
+      pCat <- getCategory pId
+      go (pCat : acc) (categoryParentId pCat)
+
+getCategory :: Integer -> IO Category
+getCategory categoryId = bracket (connect connectInfo) close $ \conn -> do
+  (category : _) <- query conn selectQuery [categoryId]
+  pure category
+  where
+    selectQuery = 
+      "SELECT * FROM categories where category_id = ?;"

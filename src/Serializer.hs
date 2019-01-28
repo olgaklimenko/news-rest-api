@@ -73,24 +73,3 @@ authorToResponse (User {..}, Author {..}) = CreateAuthorResponse
   , createAuthorResponseIsAdmin     = userIsAdmin
   }
 
-data CreateTagRequest = CreateTagRequest {
-  createTagRequestName :: T.Text 
-}
-
-data CreateTagResponse = CreateTagResponse {
-  createTagResponseId :: Integer,
-  createTagResponseName :: T.Text 
-}
-
-instance ToJSON CreateTagResponse where
-  toJSON (CreateTagResponse tag_id name) =
-    object
-      [ "tag_id" .= tag_id
-      , "name" .= name
-      ]
-
-instance FromJSON CreateTagRequest where
-  parseJSON = withObject "CreateTagRequest" $ \v ->
-    CreateTagRequest
-      <$> v
-      .:  "name"

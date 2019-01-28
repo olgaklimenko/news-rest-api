@@ -8,11 +8,8 @@ import qualified Data.Text                     as T
 import           Models.Tag
 import           Database
 
--- addTagToDB :: TagRaw -> IO Tag
--- addTagToDB TagRaw {..} = bracket (connect connectInfo) close $ \conn -> do
---   (tag : _) <- query conn insertTagQuery (tagRawName)
---   pure tag
-
-insertTagQuery :: Query
-insertTagQuery =
-  "INSERT INTO tags(tag_id, name) VALUES (default,?) RETURNING tag_id, name"
+createTag :: TagRaw -> IO Tag
+createTag TagRaw {..} = bracket (connect connectInfo) close $ \conn -> do
+  (tag : _) <- query conn insertTagQuery [tagRawName] :: IO [Tag]
+  pure tag
+  where insertTagQuery = "INSERT INTO tags(tag_id, name) VALUES (default,?) RETURNING tag_id, name"

@@ -57,3 +57,37 @@ requestToCategory (CreateCategoryRequest CategoryRequestT {..}) = CategoryRaw
 
 categoryToResponse :: Category -> CreateCategoryResponse
 categoryToResponse = CreateCategoryResponse
+
+data NestedCategoryResponse = NestedCategoryResponse {
+  ncrId :: Integer,
+  ncrName :: T.Text,
+  ncrParentCategory :: NestedCategoryResponse
+} | CategoryResponse {
+  crId :: Integer,
+  crName :: T.Text
+}
+Either () Text ~ Maybe Text
+
+
+instance ToJSON NestedCategoryResponse where
+  toJSON NestedCategoryResponse {..} = object
+    [ "category_id" .= ncrId
+    , "name" .= ncrName
+    , "parent_category" .= ncrParentCategory
+    ]
+  toJSON CategoryResponse {..} = object
+    [ "category_id" .= crId
+    , "name" .= crName
+    ]
+
+categoriesToNestedCategoryResponse
+  :: Category -> [Category] -> NestedCategoryResponse
+categoriesToNestedCategoryResponse current [] = CategoryResponse
+  { crId             = categoryId current
+  , crName           = categoryName current
+  }
+categoriesToNestedCategoryResponse current (x1 : xs) = NestedCategoryResponse
+  { ncrId             = categoryId current
+  , ncrName           = categoryName current
+  , ncrParentCategory = categoriesToNestedCategoryResponse x1 xs
+  }
