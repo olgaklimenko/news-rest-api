@@ -6,8 +6,9 @@ import           Data.ByteString
 import           Data.Text
 import           Network.Wai
 import           Network.HTTP.Types
-import Handlers.Handlers
-
+import           Handlers.Handlers
+import           Middlewares
+import           Queries.Tag
 data Route = PathRoute Text Route | DynamicRoute Text Route | MethodRoute ByteString
 
 createAuthorRoute :: Route
@@ -20,26 +21,32 @@ createTagRoute :: Route
 createTagRoute = PathRoute "api" $ PathRoute "tags" $ MethodRoute "POST"
 
 createCategoryRoute :: Route
-createCategoryRoute = PathRoute "api" $ PathRoute "categories" $ MethodRoute "POST"
+createCategoryRoute =
+  PathRoute "api" $ PathRoute "categories" $ MethodRoute "POST"
 
 getCategoriesListRoute :: Route
-getCategoriesListRoute = PathRoute "api" $ PathRoute "categories" $ MethodRoute "GET"
+getCategoriesListRoute =
+  PathRoute "api" $ PathRoute "categories" $ MethodRoute "GET"
 
 getCategoryWithParentsRoute :: Route
-getCategoryWithParentsRoute = PathRoute "api" $ PathRoute "categories" $ DynamicRoute "pk" $ MethodRoute "GET"
+getCategoryWithParentsRoute =
+  PathRoute "api" $ PathRoute "categories" $ DynamicRoute "pk" $ MethodRoute
+    "GET"
 
 updateCategoryRoute :: Route
-updateCategoryRoute = PathRoute "api" $ PathRoute "categories" $ DynamicRoute "pk" $ MethodRoute "PATCH"
+updateCategoryRoute =
+  PathRoute "api" $ PathRoute "categories" $ DynamicRoute "pk" $ MethodRoute
+    "PATCH"
 
 routes :: [(Route, Handler)]
 routes =
-  [ (createAuthorRoute  , createAuthorHandler)
-  , (getAuthorsListRoute, getAuthorsListHandler)
-  , (createTagRoute, createTagHandler)
-  , (createCategoryRoute, createCategoryHandler)
-  , (getCategoriesListRoute, getCategoriesListHandler)
+  [ (createAuthorRoute          , createAuthorHandler)
+  , (getAuthorsListRoute        , getAuthorsListHandler)
+  , (createTagRoute, checkPermission (Owner isOwnerOfTag) createTagHandler)
+  , (createCategoryRoute        , createCategoryHandler)
+  , (getCategoriesListRoute     , getCategoriesListHandler)
   , (getCategoryWithParentsRoute, getCategoryWithParentsHandler)
-  , (updateCategoryRoute, updateCategoryHandler)
+  , (updateCategoryRoute        , updateCategoryHandler)
   , ( MethodRoute "GET"
     , const $ pure $ responseLBS status200 [("Content-Type", "text/html")] "Ok"
     )

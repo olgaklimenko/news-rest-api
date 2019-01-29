@@ -12,6 +12,15 @@ import           Data.String
 getUsersList :: IO [User]
 getUsersList = getList "users"
 
+getUserById :: Integer -> IO (Maybe User)
+getUserById uid = bracket (connect connectInfo) close $ \conn -> do
+  user <- query conn q [uid]
+  case user of
+    [] -> pure Nothing
+    (user:_) -> pure (Just user)
+   where
+      q = "SELECT * FROM users WHERE user_id=?"
+
 addUserToDB :: UserRaw -> IO User
 addUserToDB UserRaw {..} = bracket (connect connectInfo) close $ \conn ->
   head <$> query conn

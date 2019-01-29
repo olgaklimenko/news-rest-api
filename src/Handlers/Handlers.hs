@@ -149,3 +149,7 @@ updateCategoryHandler req = either
     status400
     [("Content-Type", "application/json")]
     ("Invalid id in url: " <> BC.pack errorMsg)
+
+hasNoPermissionResponse :: IO Response
+hasNoPermissionResponse =
+  pure $ responseLBS status404 [("Content-Type", "application/json")] "Not Found"
