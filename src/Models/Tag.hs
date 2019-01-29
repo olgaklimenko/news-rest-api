@@ -27,4 +27,3 @@ instance ToRow Tag where
 
 instance ToRow TagRaw where
     toRow TagRaw {..} = [toField tagRawName]
-
