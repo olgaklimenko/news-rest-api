@@ -18,23 +18,23 @@ checkPermission :: Permission -> Handler -> Handler
 checkPermission Admin handler req = do
     user <- getUser req
     checkUserAdmin user handler req
-checkPermission (Owner o) handler req = do
+checkPermission (Owner f) handler req = do
     user <- getUser req
-    checkUserOwner user handler req
+    checkUserOwner user f handler req
 
 checkUserAdmin :: Maybe User -> Handler -> Handler
 checkUserAdmin Nothing     _       _   = hasNoPermissionResponse
 checkUserAdmin (Just user) handler req = handler req
 
-checkUserOwner :: Maybe User -> Handler -> Handler
-checkUserOwner Nothing _ _ = hasNoPermissionResponse
-checkUserOwner (Just user) handler req
+checkUserOwner :: Maybe User -> (User -> Integer -> IO Bool) -> Handler -> Handler
+checkUserOwner Nothing _ _ _ = hasNoPermissionResponse
+checkUserOwner (Just user) f handler req
     | userIsAdmin user = handler req
     | otherwise = do
         isOwner <- checkOwner
         if isOwner then handler req else hasNoPermissionResponse
   where
-    checkOwner = maybe (pure False) (o user) objId
+    checkOwner = maybe (pure False) (f user) objId
     objId      = getObjectPk (pathInfo req)
 
 getObjectPk :: [T.Text] -> Maybe Integer
