@@ -41,6 +41,16 @@ data NewsRaw = NewsRaw {
   newsRawMainPhoto :: T.Text
 }
 
+data NewsTag = NewsTag {
+    ntTagId :: Integer,
+    ntNewsId :: Integer
+}
+
 data NewsTagsRaw = NewsTagsRaw {
   ntrTagIds :: [Integer]
 }
+
+instance FromRow NewsTag where
+  fromRow =
+    NewsTag <$> field <*> field
+  

@@ -18,9 +18,9 @@ createTag TagRaw {..} = bracket (connect connectInfo) close $ \conn -> do
   insertTagQuery =
     "INSERT INTO tags(tag_id, name) VALUES (default,?) RETURNING tag_id, name"
 
-selectTagsFilteredById :: [Integer] -> IO [Tag]
-selectTagsFilteredById tIds = bracket (connect connectInfo) close
-  $ \conn -> query_ conn $ "SELECT * FROM tags where id in (" <> values <> ")"
+selectTagsFilteredByIdQuery :: [Integer] -> Query
+selectTagsFilteredByIdQuery tIds =
+  "SELECT * FROM tags where id in (" <> values <> ")"
  where
   values = textToQuery $ idsToText "" ((T.pack . show) <$> tIds)
   idsToText t []       = t
