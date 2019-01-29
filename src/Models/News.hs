@@ -19,25 +19,28 @@ data News = News {
 } deriving Show
 
 instance FromRow News where
-  fromRow = News <$> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow =
+    News <$> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 instance ToRow News where
-  toRow News {..} = 
-    [toField newsId,
-    toField newsTitle,
-    toField newsDateCreated,
-    toField newsAuthorId,
-    toField newsCategoryId,
-    toField newsContent,
-    toField newsMainPhoto
+  toRow News {..} =
+    [ toField newsId
+    , toField newsTitle
+    , toField newsDateCreated
+    , toField newsAuthorId
+    , toField newsCategoryId
+    , toField newsContent
+    , toField newsMainPhoto
     ]
 
 data NewsRaw = NewsRaw {
   newsRawTitle :: T.Text,
-  newsRawDateCreated :: LocalTime,
   newsRawAuthorId :: Integer,
   newsRawCategoryId :: Integer,
   newsRawContent :: T.Text,
   newsRawMainPhoto :: T.Text
 }
 
+data NewsTagsRaw = NewsTagsRaw {
+  ntrTagIds :: [Integer]
+}

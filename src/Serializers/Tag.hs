@@ -18,7 +18,7 @@ data TagRequestT f = TagRequestT {
 
 newtype CreateTagRequest = CreateTagRequest (TagRequestT Identity)
 
-newtype CreateTagResponse = CreateTagResponse Tag
+newtype TagResponse = TagResponse Tag
 
 newtype UpdateTagRequest = UpdateTagRequest (TagRequestT Maybe)
 
@@ -26,16 +26,16 @@ instance FromJSON CreateTagRequest where
     parseJSON = withObject "CreateTagRequest" $ \v ->
         fmap CreateTagRequest $ TagRequestT <$> (Identity <$> (v .: "name"))
 
-instance ToJSON CreateTagResponse where
-    toJSON (CreateTagResponse Tag {..}) =
+instance ToJSON TagResponse where
+    toJSON (TagResponse Tag {..}) =
         object ["tag_id" .= tagId, "name" .= tagName]
 
 requestToTag :: CreateTagRequest -> TagRaw
 requestToTag (CreateTagRequest TagRequestT {..}) =
     TagRaw (runIdentity tagRequestName)
 
-tagToResponse :: Tag -> CreateTagResponse
-tagToResponse = CreateTagResponse
+tagToResponse :: Tag -> TagResponse
+tagToResponse = TagResponse
 
 instance FromJSON UpdateTagRequest where
     parseJSON = withObject "UpdateTagRequest" $ \v ->

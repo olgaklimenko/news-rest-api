@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-module Serializer where
+module Serializers.Author where
 
 import           Data.Aeson
 import qualified Data.Text                     as T
@@ -16,19 +16,19 @@ data CreateAuthorRequest = CreateAuthorRequest {
   createAuthorRequestDescription :: T.Text
 }
 
-data CreateAuthorResponse = CreateAuthorResponse {
-  createAuthorResponseName :: T.Text,
-  createAuthorResponseSurname :: T.Text,
-  createAuthorResponseAvatar :: T.Text,
-  createAuthorResponseDescription :: T.Text,
-  createAuthorResponseId :: Integer,
-  createAuthorResponseUserId :: Integer,
-  createAuthorResponseDateCreated :: LocalTime,
-  createAuthorResponseIsAdmin :: Bool
+data AuthorResponse = AuthorResponse {
+  authorResponseName :: T.Text,
+  authorResponseSurname :: T.Text,
+  authorResponseAvatar :: T.Text,
+  authorResponseDescription :: T.Text,
+  authorResponseId :: Integer,
+  authorResponseUserId :: Integer,
+  authorResponseDateCreated :: LocalTime,
+  authorResponseIsAdmin :: Bool
 }
 
-instance ToJSON CreateAuthorResponse where
-  toJSON (CreateAuthorResponse name surname avatar desc id uid date isAdmin) =
+instance ToJSON AuthorResponse where
+  toJSON (AuthorResponse name surname avatar desc id uid date isAdmin) =
     object
       [ "name" .= name
       , "surname" .= surname
@@ -61,15 +61,15 @@ requestToAuthor CreateAuthorRequest {..} =
   , AuthorRaw { authorRawDescription = createAuthorRequestDescription }
   )
 
-authorToResponse :: (User, Author) -> CreateAuthorResponse
-authorToResponse (User {..}, Author {..}) = CreateAuthorResponse
-  { createAuthorResponseName        = userName
-  , createAuthorResponseSurname     = userSurname
-  , createAuthorResponseAvatar      = userAvatar
-  , createAuthorResponseDescription = authorDescription
-  , createAuthorResponseId          = authorId
-  , createAuthorResponseUserId      = userId
-  , createAuthorResponseDateCreated = userDateCreated
-  , createAuthorResponseIsAdmin     = userIsAdmin
+authorToResponse :: (User, Author) -> AuthorResponse
+authorToResponse (User {..}, Author {..}) = AuthorResponse
+  { authorResponseName        = userName
+  , authorResponseSurname     = userSurname
+  , authorResponseAvatar      = userAvatar
+  , authorResponseDescription = authorDescription
+  , authorResponseId          = authorId
+  , authorResponseUserId      = userId
+  , authorResponseDateCreated = userDateCreated
+  , authorResponseIsAdmin     = userIsAdmin
   }
 

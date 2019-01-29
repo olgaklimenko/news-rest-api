@@ -10,7 +10,6 @@ import qualified Data.Text                     as T
 import           Data.Aeson
 import qualified Data.ByteString.Lazy          as LB
 import qualified Data.ByteString.Lazy.Char8    as BC
-import           Serializer
 import           Router
 
 app :: Application
@@ -32,4 +31,3 @@ main = do
   putStrLn "Starting server at: \n"
   putStrLn $ "http://localhost:8080/"
   run 8080 (logging app)
-

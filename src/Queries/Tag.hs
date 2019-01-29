@@ -7,9 +7,20 @@ import           Control.Exception
 import qualified Data.Text                     as T
 import           Models.Tag
 import           Database
-
+import           Helpers
 createTag :: TagRaw -> IO Tag
 createTag TagRaw {..} = bracket (connect connectInfo) close $ \conn -> do
   (tag : _) <- query conn insertTagQuery [tagRawName] :: IO [Tag]
   pure tag
-  where insertTagQuery = "INSERT INTO tags(tag_id, name) VALUES (default,?) RETURNING tag_id, name"
+ where
+  insertTagQuery =
+    "INSERT INTO tags(tag_id, name) VALUES (default,?) RETURNING tag_id, name"
+
+selectTagsFilteredById :: [Integer] -> IO [Tag]
+selectTagsFilteredById tIds = bracket (connect connectInfo) close
+  $ \conn -> query_ conn $ "SELECT * FROM tags where id in (" <> values <> ")"
+ where
+  values = textToQuery $ idsToText "" ((T.pack . show) <$> tIds)
+  idsToText t []       = t
+  idsToText t (x : []) = idsToText (t <> x) []
+  idsToText t (x : xs) = idsToText (t <> x <> ",") xs
