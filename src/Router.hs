@@ -7,6 +7,10 @@ import           Data.Text
 import           Network.Wai
 import           Network.HTTP.Types
 import           Handlers.Handlers
+import           Handlers.User
+import           Handlers.Author
+import           Handlers.Tag
+import           Handlers.Category
 import           Middlewares
 import           Queries.Tag
 data Route = PathRoute Text Route | DynamicRoute Text Route | MethodRoute ByteString
