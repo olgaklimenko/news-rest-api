@@ -26,3 +26,21 @@ createUserHandler req = do
     let userJSON = encode $ userToResponse user
     pure $ responseLBS status200 [("Content-Type", "application/json")] userJSON
 
+getUserIdFromUrl :: [T.Text] -> Either String T.Text
+getUserIdFromUrl ["api", "user", userId] = Right userId
+getUserIdFromUrl path = Left $ "incorrect_data" <> (show $ mconcat path)
+
+updateUserHandler :: Handler
+updateUserHandler req = do
+    body <- requestBody req
+    let updateUserData = eitherDecode $ LB.fromStrict body :: Either String UpdateUserRequest
+        userId = either error id (getUserIdFromUrl $ pathInfo req)
+
+    either (pure . reportParseError) (goUpdateUser userId) updateUserData
+    where
+    goUpdateUser :: T.Text -> UpdateUserRequest -> IO Response
+    goUpdateUser uid userData = do
+        let partial = requestToUpdateUser userData
+        user <- updateUser uid partial
+        let userJSON = encode $ userToResponse user
+        pure $ responseLBS status200 [("Content-Type", "application/json")] userJSON

@@ -21,6 +21,13 @@ createAuthorRoute = PathRoute "api" $ PathRoute "authors" $ MethodRoute "POST"
 getAuthorsListRoute :: Route
 getAuthorsListRoute = PathRoute "api" $ PathRoute "authors" $ MethodRoute "GET"
 
+createUserRoute :: Route
+createUserRoute = PathRoute "api" $ PathRoute "user" $ MethodRoute "POST"
+
+updateUserRoute :: Route
+updateUserRoute =
+  PathRoute "api" $ PathRoute "user" $ DynamicRoute "pk" $ MethodRoute "PATCH"
+
 createTagRoute :: Route
 createTagRoute = PathRoute "api" $ PathRoute "tags" $ MethodRoute "POST"
 
@@ -46,6 +53,8 @@ routes :: [(Route, Handler)]
 routes =
   [ (createAuthorRoute          , createAuthorHandler)
   , (getAuthorsListRoute        , getAuthorsListHandler)
+  , (createUserRoute            , createUserHandler)
+  , (updateUserRoute            , updateUserHandler)
   , (createTagRoute, checkPermission (Owner isOwnerOfTag) createTagHandler)
   , (createCategoryRoute        , createCategoryHandler)
   , (getCategoriesListRoute     , getCategoriesListHandler)
