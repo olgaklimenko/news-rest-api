@@ -12,3 +12,4 @@ textToQuery = S.fromString . T.unpack
 
 integerToText :: Integer -> T.Text
 integerToText = T.pack . show
+

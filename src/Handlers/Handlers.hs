@@ -26,6 +26,9 @@ reportParseError err = responseLBS status400
                                    [("Content-Type", "plain/text")]
                                    ("Parse error: " <> BC.pack err)
 
-hasNoPermissionResponse :: IO Response
-hasNoPermissionResponse =
+notFoundResponse :: IO Response
+notFoundResponse =
   pure $ responseLBS status404 [("Content-Type", "application/json")] "Not Found"
+
+hasNoPermissionResponse :: IO Response
+hasNoPermissionResponse = notFoundResponse

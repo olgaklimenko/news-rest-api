@@ -14,6 +14,7 @@ import           Models.Category
 import           Serializers.Category
 import           Helpers
 import           Handlers.Handlers
+import qualified Data.ByteString.Internal as BS
 
 getCategoriesListHandler :: Handler
 getCategoriesListHandler req = do
@@ -85,6 +86,24 @@ updateCategoryHandler req = either
             pure $ responseLBS status200
                                [("Content-Type", "application/json")]
                                categoryJSON
+    invalidIdResponse errorMsg = pure $ responseLBS
+        status400
+        [("Content-Type", "application/json")]
+        ("Invalid id in url: " <> BC.pack errorMsg)
+
+deleteCategoryHandler :: Handler
+deleteCategoryHandler req = either
+    invalidIdResponse
+    successResponse
+    (getCategoryIdFromUrl (pathInfo req) >>= textToInteger)
+  where
+    successResponse categoryId = do
+            deleted <- deleteCategory categoryId
+            case deleted of
+                0 -> notFoundResponse
+                _ -> pure $ responseLBS status204
+                               [("Content-Type", "application/json")]
+                               ""
     invalidIdResponse errorMsg = pure $ responseLBS
         status400
         [("Content-Type", "application/json")]

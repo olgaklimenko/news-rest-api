@@ -51,21 +51,29 @@ updateCategoryRoute =
   PathRoute "api" $ PathRoute "categories" $ DynamicRoute "pk" $ MethodRoute
     "PATCH"
 
+deleteCategoryRoute :: Route
+deleteCategoryRoute =
+  PathRoute "api" $ PathRoute "categories" $ DynamicRoute "pk" $ MethodRoute
+    "DELETE"
+
 createNewsRoute :: Route
 createNewsRoute = PathRoute "api" $ PathRoute "news" $ MethodRoute "POST"
 
 routes :: [(Route, Handler)]
 routes =
-  [ (createAuthorRoute          , createAuthorHandler)
-  , (getAuthorsListRoute        , getAuthorsListHandler)
-  , (createUserRoute            , createUserHandler)
-  , (updateUserRoute            , updateUserHandler)
+  [ (createAuthorRoute  , createAuthorHandler)
+  , (getAuthorsListRoute, getAuthorsListHandler)
+  , (createUserRoute    , createUserHandler)
+  , ( updateUserRoute
+    , updateUserHandler
+    )
   -- , (createTagRoute, checkPermission (Owner isOwnerOfTag) createTagHandler)
   , (createTagRoute             , createTagHandler)
   , (createCategoryRoute        , createCategoryHandler)
   , (getCategoriesListRoute     , getCategoriesListHandler)
   , (getCategoryWithParentsRoute, getCategoryWithParentsHandler)
   , (updateCategoryRoute        , updateCategoryHandler)
+  , (deleteCategoryRoute        , deleteCategoryHandler)
   , (createNewsRoute            , createNewsHandler)
   , ( MethodRoute "GET"
     , const $ pure $ responseLBS status200 [("Content-Type", "text/html")] "Ok"
