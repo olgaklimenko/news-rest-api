@@ -9,6 +9,8 @@ import           Models.Category
 import           Database
 import           Data.String
 import           Helpers
+import           GHC.Int
+
 createCategory :: CategoryRaw -> IO Category
 createCategory category = bracket (connect connectInfo) close $ \conn -> do
   (category : _) <- query conn (insertCategoryQuery category) ()
@@ -85,3 +87,8 @@ updateCategoryQuery cId CategoryRawPartial {..} =
         <> " WHERE category_id="
         <> toQuery (T.pack $ show cId)
         <> " RETURNING category_id, name, parent_id"
+
+deleteCategory :: Integer -> IO GHC.Int.Int64
+deleteCategory cId = bracket (connect connectInfo) close $ \conn -> execute conn deleteCategoryQuery [cId]
+  where deleteCategoryQuery = "DELETE FROM categories WHERE category_id=?"
+
