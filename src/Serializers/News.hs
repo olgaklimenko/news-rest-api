@@ -9,6 +9,10 @@ import           Models.News
 import           Serializers.Category
 import           Serializers.Author
 import           Serializers.Tag
+import           Models.Category
+import           Models.Author
+import           Models.Tag
+import           Models.User
 import           Data.Aeson
 
 data NewsRequestT f = NewsRequestT {
@@ -55,7 +59,7 @@ instance ToJSON NewsResponse where
 
 requestToNews :: CreateNewsRequest -> (NewsRaw, NewsTagsRaw)
 requestToNews (CreateNewsRequest NewsRequestT {..}) =
-    (NewsRaw (runIdentity nrTitle)
+    ( NewsRaw (runIdentity nrTitle)
               (runIdentity nrAuthorId)
               (runIdentity nrCategoryId)
               (runIdentity nrContent)
@@ -63,3 +67,15 @@ requestToNews (CreateNewsRequest NewsRequestT {..}) =
     , NewsTagsRaw (runIdentity nrTags)
     )
 
+newsToResponse :: (News, [Tag], [Category], (User, Author)) -> NewsResponse
+newsToResponse (News {..}, tags, categories, (user,author)) = NewsResponse
+    { cnrTitle     = newsTitle
+    , cnrAuthor    = authorResp (user,author)
+    , cnrCategory  = categoryResp categories
+    , cnrContent   = newsContent
+    , cnrMainPhoto = newsMainPhoto
+    , cnrTags      = tagsResp tags
+    }  where 
+        authorResp = authorToResponse
+        categoryResp (x:xs) = categoriesToNestedCategoryResponse x xs
+        tagsResp tags = tagToResponse <$> tags 

@@ -11,8 +11,10 @@ import           Handlers.User
 import           Handlers.Author
 import           Handlers.Tag
 import           Handlers.Category
+import           Handlers.News
 import           Middlewares
 import           Queries.Tag
+
 data Route = PathRoute Text Route | DynamicRoute Text Route | MethodRoute ByteString
 
 createAuthorRoute :: Route
@@ -22,11 +24,11 @@ getAuthorsListRoute :: Route
 getAuthorsListRoute = PathRoute "api" $ PathRoute "authors" $ MethodRoute "GET"
 
 createUserRoute :: Route
-createUserRoute = PathRoute "api" $ PathRoute "user" $ MethodRoute "POST"
+createUserRoute = PathRoute "api" $ PathRoute "users" $ MethodRoute "POST"
 
 updateUserRoute :: Route
 updateUserRoute =
-  PathRoute "api" $ PathRoute "user" $ DynamicRoute "pk" $ MethodRoute "PATCH"
+  PathRoute "api" $ PathRoute "users" $ DynamicRoute "pk" $ MethodRoute "PATCH"
 
 createTagRoute :: Route
 createTagRoute = PathRoute "api" $ PathRoute "tags" $ MethodRoute "POST"
@@ -49,17 +51,22 @@ updateCategoryRoute =
   PathRoute "api" $ PathRoute "categories" $ DynamicRoute "pk" $ MethodRoute
     "PATCH"
 
+createNewsRoute :: Route
+createNewsRoute = PathRoute "api" $ PathRoute "news" $ MethodRoute "POST"
+
 routes :: [(Route, Handler)]
 routes =
   [ (createAuthorRoute          , createAuthorHandler)
   , (getAuthorsListRoute        , getAuthorsListHandler)
   , (createUserRoute            , createUserHandler)
   , (updateUserRoute            , updateUserHandler)
-  , (createTagRoute, checkPermission (Owner isOwnerOfTag) createTagHandler)
+  -- , (createTagRoute, checkPermission (Owner isOwnerOfTag) createTagHandler)
+  , (createTagRoute             , createTagHandler)
   , (createCategoryRoute        , createCategoryHandler)
   , (getCategoriesListRoute     , getCategoriesListHandler)
   , (getCategoryWithParentsRoute, getCategoryWithParentsHandler)
   , (updateCategoryRoute        , updateCategoryHandler)
+  , (createNewsRoute            , createNewsHandler)
   , ( MethodRoute "GET"
     , const $ pure $ responseLBS status200 [("Content-Type", "text/html")] "Ok"
     )

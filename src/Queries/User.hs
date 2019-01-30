@@ -46,9 +46,9 @@ updateUserQuery uid UserRawPartial {..} =
     toQuery  = fromString . T.unpack
     nameExpr = maybe "" (\name -> "name = '" <> name <> "'") userRawPartialName
     surnameExpr =
-      maybe "" (((<>) "'") . ((<>) "surname= '")) userRawPartialSurname
+      maybe "" (\name -> "surname = '" <> name <> "'") userRawPartialSurname
     avatarExpr =
-      maybe "" (((<>) "'") . ((<>) "avatar= '")) userRawPartialAvatar
+      maybe "" (\name -> "avatar = '" <> name <> "'") userRawPartialAvatar
     params =
       toQuery
         . T.intercalate ","

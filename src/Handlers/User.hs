@@ -27,7 +27,7 @@ createUserHandler req = do
     pure $ responseLBS status200 [("Content-Type", "application/json")] userJSON
 
 getUserIdFromUrl :: [T.Text] -> Either String T.Text
-getUserIdFromUrl ["api", "user", userId] = Right userId
+getUserIdFromUrl ["api", "users", userId] = Right userId
 getUserIdFromUrl path = Left $ "incorrect_data" <> (show $ mconcat path)
 
 updateUserHandler :: Handler

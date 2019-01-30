@@ -7,10 +7,10 @@ import           Database.PostgreSQL.Simple
 import           Data.Text                     as T
 import           Control.Exception
 import           Data.Time
-import Models.User
-import Models.Author
-import Queries.User
-import Database
+import           Models.User
+import           Models.Author
+import           Queries.User
+import           Database
 
 getAuthorsList :: IO [(User, Author)]
 getAuthorsList = bracket (connect connectInfo) close $ \conn ->
@@ -37,4 +37,16 @@ addAuthorToDB (UserRaw {..}, AuthorRaw {..}) =
 
 insertAuthorQuery :: Query
 insertAuthorQuery =
-    "INSERT INTO authors(author_id, user_id, description) VALUES (default,?,?) RETURNING author_id, user_id, description"
+  "INSERT INTO authors(author_id, user_id, description) VALUES (default,?,?) RETURNING author_id, user_id, description"
+
+getAuthorById :: Integer -> IO (User, Author)
+getAuthorById aId = bracket (connect connectInfo) close $ \conn -> do
+  (userWithAuthor : _) <-
+    fmap inductiveTupleToTuple
+      <$> (query conn authorsQuery [aId] :: IO [User :. Author])
+  pure userWithAuthor
+ where
+  authorsQuery
+    = "SELECT  u.*, a.*  FROM authors AS a \
+      \INNER JOIN users AS u \
+      \ON u.user_id = a.user_id WHERE author_id=?"

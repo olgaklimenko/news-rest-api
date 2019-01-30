@@ -20,7 +20,7 @@ createTag TagRaw {..} = bracket (connect connectInfo) close $ \conn -> do
 
 selectTagsFilteredByIdQuery :: [Integer] -> Query
 selectTagsFilteredByIdQuery tIds =
-  "SELECT * FROM tags where id in (" <> values <> ")"
+  "SELECT * FROM tags where tag_id in (" <> values <> ")"
  where
   values = textToQuery $ idsToText "" ((T.pack . show) <$> tIds)
   idsToText t []       = t
