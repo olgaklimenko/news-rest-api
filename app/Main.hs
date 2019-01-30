@@ -11,9 +11,10 @@ import           Data.Aeson
 import qualified Data.ByteString.Lazy          as LB
 import qualified Data.ByteString.Lazy.Char8    as BC
 import           Router
+import  Routes.RoutingTable
 
 app :: Application
-app req respond = route routes req >>= respond
+app req respond = route routingTable req >>= respond
 
 logging :: Middleware
 logging app req respond = app

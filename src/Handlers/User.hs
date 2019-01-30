@@ -44,3 +44,9 @@ updateUserHandler req = do
         user <- updateUser uid partial
         let userJSON = encode $ userToResponse user
         pure $ responseLBS status200 [("Content-Type", "application/json")] userJSON
+
+getUsersListHandler :: Handler
+getUsersListHandler req = do
+    users <- getUsersList
+    let usersJSON = encode $ userToResponse <$> users
+    pure $ responseLBS status200 [("Content-Type", "application/json")] usersJSON

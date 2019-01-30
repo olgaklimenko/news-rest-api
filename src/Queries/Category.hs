@@ -89,5 +89,6 @@ updateCategoryQuery cId CategoryRawPartial {..} =
         <> " RETURNING category_id, name, parent_id"
 
 deleteCategory :: Integer -> IO GHC.Int.Int64
-deleteCategory cId = bracket (connect connectInfo) close $ \conn -> execute conn deleteCategoryQuery [cId]
+deleteCategory cId = bracket (connect connectInfo) close
+  $ \conn -> execute conn deleteCategoryQuery [cId]
   where deleteCategoryQuery = "DELETE FROM categories WHERE category_id=?"
