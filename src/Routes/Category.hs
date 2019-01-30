@@ -39,3 +39,4 @@ deleteCategoryRoute :: Route
 deleteCategoryRoute =
     PathRoute "api" $ PathRoute "categories" $ DynamicRoute "pk" $ MethodRoute
         "DELETE"
+

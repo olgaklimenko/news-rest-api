@@ -8,6 +8,7 @@ import           Database
 import           Control.Exception              ( bracket )
 import qualified Data.Text                     as T
 import           Data.String
+import           GHC.Int
 
 getUsersList :: IO [User]
 getUsersList = getList "users"
@@ -60,3 +61,8 @@ updateUserQuery uid UserRawPartial {..} =
     <> "WHERE user_id="
     <> toQuery uid
     <> "RETURNING user_id, name, surname, avatar, date_created, is_admin"
+
+deleteUser :: Integer -> IO GHC.Int.Int64
+deleteUser cId = bracket (connect connectInfo) close
+  $ \conn -> execute conn deleteQuery [cId]
+  where deleteQuery = "DELETE FROM users WHERE user_id=?"

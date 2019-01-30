@@ -50,3 +50,21 @@ getUsersListHandler req = do
     users <- getUsersList
     let usersJSON = encode $ userToResponse <$> users
     pure $ responseLBS status200 [("Content-Type", "application/json")] usersJSON
+
+deleteUserHandler :: Handler
+deleteUserHandler req = either
+    invalidIdResponse
+    successResponse
+    (getUserIdFromUrl (pathInfo req) >>= textToInteger)
+    where
+    successResponse uId = do
+            deleted <- deleteUser uId
+            case deleted of
+                0 -> notFoundResponse
+                _ -> pure $ responseLBS status204
+                                [("Content-Type", "application/json")]
+                                ""
+    invalidIdResponse errorMsg = pure $ responseLBS
+        status400
+        [("Content-Type", "application/json")]
+        ("Invalid id in url: " <> BC.pack errorMsg)

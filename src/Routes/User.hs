@@ -14,6 +14,7 @@ userRoutes =
         (createUserRoute, createUserHandler)
         , (updateUserRoute, updateUserHandler)
         , (getUsersListRoute, getUsersListHandler)
+        , (deleteUserRoute, deleteUserHandler)
     ]
 
 createUserRoute :: Route
@@ -26,3 +27,8 @@ updateUserRoute =
 
 getUsersListRoute :: Route
 getUsersListRoute = PathRoute "api" $ PathRoute "users" $ MethodRoute "GET"
+
+deleteUserRoute :: Route
+deleteUserRoute =
+    PathRoute "api" $ PathRoute "users" $ DynamicRoute "pk" $ MethodRoute
+        "DELETE"

@@ -9,6 +9,7 @@ import           Models.Tag
 import           Models.User
 import           Database
 import           Helpers
+import           GHC.Int
 
 createTag :: TagRaw -> IO Tag
 createTag TagRaw {..} = bracket (connect connectInfo) close $ \conn -> do
@@ -37,3 +38,20 @@ getTagById uid = bracket (connect connectInfo) close $ \conn -> do
 
 isOwnerOfTag :: User -> Integer -> IO Bool
 isOwnerOfTag _ _ = pure False
+
+updateTag :: Integer -> TagRaw -> IO Tag
+updateTag tId TagRaw {..} = bracket (connect connectInfo) close $ \conn -> do
+  (tag:_) <- query conn (updateTagQuery) (tagRawName,tId)
+  pure tag
+    where
+      updateTagQuery = "UPDATE tags SET name=? WHERE tag_id=? RETURNING tag_id, name"
+
+getTagsList :: IO [Tag]
+getTagsList = bracket (connect connectInfo) close
+  $ \conn -> query conn selectQuery ()
+  where selectQuery = "SELECT * FROM tags;"
+
+deleteTag :: Integer -> IO GHC.Int.Int64
+deleteTag tId = bracket (connect connectInfo) close
+    $ \conn -> execute conn deleteQuery [tId]
+    where deleteQuery = "DELETE FROM tags WHERE tag_id=?"
