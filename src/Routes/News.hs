@@ -4,9 +4,9 @@ module Routes.News where
 
 import qualified Data.ByteString               as BS
 import qualified Data.Text                     as T
-import           Routes.Routes
+import           Server.Routes
+import           Server.Handlers
 import           Handlers.News
-import           Handlers.Handlers
 
 newsRoutes :: [(Route, Handler)]
 newsRoutes = [(createNewsRoute, createNewsHandler)]

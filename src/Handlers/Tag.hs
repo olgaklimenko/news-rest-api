@@ -7,12 +7,13 @@ import           Network.HTTP.Types
 import qualified Data.ByteString.Lazy          as LB
 import qualified Data.ByteString.Lazy.Char8    as BC
 import qualified Data.Text                     as T
-import           Database
 import           Data.Aeson
+import           Server.Database
+import           Server.Handlers
+import           Server.Helpers
 import           Queries.Tag
 import           Serializers.Tag
-import           Helpers
-import Handlers.Handlers
+
 
 getTagIdFromUrl :: [T.Text] -> Either String T.Text
 getTagIdFromUrl ["api", "tags", tagId] = Right tagId

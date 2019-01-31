@@ -1,16 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
-module Database where
+module Server.Database where
 
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.Migration
 import           System.Directory               ( createDirectoryIfMissing )
-import           Data.Text                     as T
+import qualified Data.Text                     as T
                                          hiding ( head )
 import           Control.Exception
 import           Data.Monoid                    ( (<>) )
 import           GHC.Int
-
 
 initializeDB :: IO ()
 initializeDB = do

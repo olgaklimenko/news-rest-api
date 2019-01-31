@@ -13,9 +13,9 @@ import           Models.Author
 import           Queries.Tag
 import           Queries.Category
 import           Queries.Author
-import           Database
+import           Server.Database
 import           Data.String
-import           Helpers
+import           Server.Helpers
 
 createNews :: (NewsRaw, NewsTagsRaw) -> IO (News, [Tag], [Category], (User, Author))
 createNews (NewsRaw {..}, newsTagRaw) =

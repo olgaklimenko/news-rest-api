@@ -7,7 +7,6 @@ module Serializers.Tag where
 import           Data.Aeson
 import qualified Data.Text                     as T
 import           Data.Time
-import           Database
 import           Models.Tag
 import           Data.Functor.Identity
 

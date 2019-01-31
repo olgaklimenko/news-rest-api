@@ -7,7 +7,6 @@ module Serializers.Category where
 import           Data.Aeson
 import qualified Data.Text                     as T
 import           Data.Time
-import           Database
 import           Models.Category
 import           Data.Functor.Identity
 

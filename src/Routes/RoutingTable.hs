@@ -1,13 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Routes.RoutingTable where
+import           Server.Routes
+import           Server.Handlers
 import Routes.Author
 import Routes.Category
 import Routes.User
 import Routes.News
 import Routes.Tag
-import Routes.Routes
-import Handlers.Handlers
+
 import           Network.Wai
 import           Network.HTTP.Types
 

@@ -4,7 +4,7 @@ module Queries.User where
 
 import           Database.PostgreSQL.Simple
 import           Models.User
-import           Database
+import           Server.Database
 import           Control.Exception              ( bracket )
 import qualified Data.Text                     as T
 import           Data.String

@@ -1,4 +1,4 @@
-module Helpers where
+module Server.Helpers where
 import qualified Data.Text                     as T
 import qualified Data.Text.Read                as R
 import           Database.PostgreSQL.Simple

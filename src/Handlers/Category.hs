@@ -6,15 +6,16 @@ import           Network.Wai
 import           Network.HTTP.Types
 import qualified Data.ByteString.Lazy          as LB
 import qualified Data.ByteString.Lazy.Char8    as BC
+import qualified Data.ByteString.Internal      as BS
 import qualified Data.Text                     as T
-import           Database
 import           Data.Aeson
+import           Server.Database
+import           Server.Handlers
+import           Server.Helpers
 import           Queries.Category
 import           Models.Category
 import           Serializers.Category
-import           Helpers
-import           Handlers.Handlers
-import qualified Data.ByteString.Internal as BS
+
 
 getCategoriesListHandler :: Handler
 getCategoriesListHandler req = do
@@ -98,12 +99,12 @@ deleteCategoryHandler req = either
     (getCategoryIdFromUrl (pathInfo req) >>= textToInteger)
   where
     successResponse categoryId = do
-            deleted <- deleteCategory categoryId
-            case deleted of
-                0 -> notFoundResponse
-                _ -> pure $ responseLBS status204
-                               [("Content-Type", "application/json")]
-                               ""
+        deleted <- deleteCategory categoryId
+        case deleted of
+            0 -> notFoundResponse
+            _ -> pure $ responseLBS status204
+                                    [("Content-Type", "application/json")]
+                                    ""
     invalidIdResponse errorMsg = pure $ responseLBS
         status400
         [("Content-Type", "application/json")]

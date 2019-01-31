@@ -1,15 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Middlewares where
+module Server.Middlewares where
 
-import           Handlers.Handlers
-import           Network.Wai
-import           Queries.User
-import           Models.User
 import qualified Data.Text                     as T
 import qualified Data.ByteString.Char8         as BS
 import           Text.Read
-import           Helpers
+import           Network.Wai
+import           Server.Handlers
+import           Server.Helpers
+import           Queries.User
+import           Models.User
+
 data Permission = Admin
     | Owner (User -> Integer -> IO Bool)
     | Regular

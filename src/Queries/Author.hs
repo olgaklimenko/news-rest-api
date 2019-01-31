@@ -10,7 +10,7 @@ import           Data.Time
 import           Models.User
 import           Models.Author
 import           Queries.User
-import           Database
+import           Server.Database
 
 getAuthorsList :: IO [(User, Author)]
 getAuthorsList = bracket (connect connectInfo) close $ \conn ->

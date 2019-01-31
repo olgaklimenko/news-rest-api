@@ -1,4 +1,4 @@
-module Routes.Routes where
+module Server.Routes where
 import qualified          Data.Text as T
 import qualified          Data.ByteString as BS
 

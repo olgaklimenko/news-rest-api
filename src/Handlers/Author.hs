@@ -7,11 +7,11 @@ import           Network.HTTP.Types
 import qualified Data.ByteString.Lazy          as LB
 import qualified Data.ByteString.Lazy.Char8    as BC
 import qualified Data.Text                     as T
-import           Database
 import           Data.Aeson
+import           Server.Database
+import           Server.Handlers
 import           Queries.Author
 import           Serializers.Author
-import           Handlers.Handlers
 
 getAuthorsListHandler :: Handler
 getAuthorsListHandler req = do

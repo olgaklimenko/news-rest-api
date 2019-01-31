@@ -1,20 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Router where
+module Server.Router where
 
 import qualified Data.ByteString               as BS
 import qualified Data.Text                     as T
 import           Network.Wai
 import           Network.HTTP.Types
-import           Handlers.Handlers
+import           Server.Handlers
+import           Server.Helpers
+import           Server.Middlewares
+import           Server.Routes
 import           Handlers.User
 import           Handlers.Author
 import           Handlers.Tag
 import           Handlers.Category
 import           Handlers.News
-import           Middlewares
 import           Queries.Tag
-import           Routes.Routes
 
 isCorrectRoute :: Route -> [T.Text] -> BS.ByteString -> Bool
 isCorrectRoute (MethodRoute x) [] method | x == method = True

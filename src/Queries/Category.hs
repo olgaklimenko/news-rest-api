@@ -6,9 +6,9 @@ import           Database.PostgreSQL.Simple
 import           Control.Exception
 import qualified Data.Text                     as T
 import           Models.Category
-import           Database
+import           Server.Database
 import           Data.String
-import           Helpers
+import           Server.Helpers
 import           GHC.Int
 
 createCategory :: CategoryRaw -> IO Category

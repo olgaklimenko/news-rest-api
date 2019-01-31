@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import           Database
 import           Network.Wai
 import           Network.HTTP.Types
 import           Network.Wai.Handler.Warp       ( run )
@@ -10,8 +9,8 @@ import qualified Data.Text                     as T
 import           Data.Aeson
 import qualified Data.ByteString.Lazy          as LB
 import qualified Data.ByteString.Lazy.Char8    as BC
-import           Router
-import  Routes.RoutingTable
+import           Server.Router
+import           Routes.RoutingTable
 
 app :: Application
 app req respond = route routingTable req >>= respond

@@ -31,6 +31,7 @@ dependencies:
 - aeson
 - time
 - bytestring
+- configurator
 
 library:
   source-dirs: src

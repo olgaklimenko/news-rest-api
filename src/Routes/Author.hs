@@ -4,9 +4,9 @@ module Routes.Author where
 
 import qualified Data.ByteString               as BS
 import qualified Data.Text                     as T
-import           Routes.Routes
+import           Server.Routes
+import           Server.Handlers
 import           Handlers.Author
-import           Handlers.Handlers
 
 
 createAuthorRoute :: Route

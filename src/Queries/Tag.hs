@@ -7,8 +7,8 @@ import           Control.Exception
 import qualified Data.Text                     as T
 import           Models.Tag
 import           Models.User
-import           Database
-import           Helpers
+import           Server.Database
+import           Server.Helpers
 import           GHC.Int
 
 createTag :: TagRaw -> IO Tag
@@ -41,7 +41,7 @@ isOwnerOfTag _ _ = pure False
 
 updateTag :: Integer -> TagRaw -> IO Tag
 updateTag tId TagRaw {..} = bracket (connect connectInfo) close $ \conn -> do
-  (tag:_) <- query conn (updateTagQuery) (tagRawName,tId)
+  (tag:_) <- query conn updateTagQuery (tagRawName,tId)
   pure tag
     where
       updateTagQuery = "UPDATE tags SET name=? WHERE tag_id=? RETURNING tag_id, name"

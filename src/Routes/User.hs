@@ -4,9 +4,9 @@ module Routes.User where
 
 import qualified Data.ByteString               as BS
 import qualified Data.Text                     as T
-import           Routes.Routes
+import           Server.Routes
+import           Server.Handlers
 import           Handlers.User
-import           Handlers.Handlers
 
 userRoutes :: [(Route, Handler)]
 userRoutes =

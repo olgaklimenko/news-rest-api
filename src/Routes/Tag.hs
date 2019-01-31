@@ -4,9 +4,9 @@ module Routes.Tag where
 
 import qualified Data.ByteString               as BS
 import qualified Data.Text                     as T
-import           Routes.Routes
+import           Server.Routes
+import           Server.Handlers
 import           Handlers.Tag
-import           Handlers.Handlers
 
 tagRoutes :: [(Route, Handler)]
 tagRoutes = [
