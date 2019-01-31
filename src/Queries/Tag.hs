@@ -5,14 +5,15 @@ module Queries.Tag where
 import           Database.PostgreSQL.Simple
 import           Control.Exception
 import qualified Data.Text                     as T
+import qualified Data.Configurator.Types       as C
 import           Models.Tag
 import           Models.User
 import           Server.Database
 import           Server.Helpers
 import           GHC.Int
 
-createTag :: TagRaw -> IO Tag
-createTag TagRaw {..} = bracket (connect connectInfo) close $ \conn -> do
+createTag :: C.Config -> TagRaw -> IO Tag
+createTag conf TagRaw {..} = bracket (connectDB conf) close $ \conn -> do
   (tag : _) <- query conn insertTagQuery [tagRawName] :: IO [Tag]
   pure tag
  where
@@ -28,8 +29,8 @@ selectTagsFilteredByIdQuery tIds =
   idsToText t (x : []) = idsToText (t <> x) []
   idsToText t (x : xs) = idsToText (t <> x <> ",") xs
 
-getTagById :: Integer -> IO (Maybe Tag)
-getTagById uid = bracket (connect connectInfo) close $ \conn -> do
+getTagById :: C.Config -> Integer -> IO (Maybe Tag)
+getTagById conf uid = bracket (connectDB conf) close $ \conn -> do
   tag <- query conn q [uid]
   case tag of
     []        -> pure Nothing
@@ -39,19 +40,20 @@ getTagById uid = bracket (connect connectInfo) close $ \conn -> do
 isOwnerOfTag :: User -> Integer -> IO Bool
 isOwnerOfTag _ _ = pure False
 
-updateTag :: Integer -> TagRaw -> IO Tag
-updateTag tId TagRaw {..} = bracket (connect connectInfo) close $ \conn -> do
-  (tag:_) <- query conn updateTagQuery (tagRawName,tId)
+updateTag :: C.Config -> Integer -> TagRaw -> IO Tag
+updateTag conf tId TagRaw {..} = bracket (connectDB conf) close $ \conn -> do
+  (tag : _) <- query conn updateTagQuery (tagRawName, tId)
   pure tag
-    where
-      updateTagQuery = "UPDATE tags SET name=? WHERE tag_id=? RETURNING tag_id, name"
+ where
+  updateTagQuery =
+    "UPDATE tags SET name=? WHERE tag_id=? RETURNING tag_id, name"
 
-getTagsList :: IO [Tag]
-getTagsList = bracket (connect connectInfo) close
+getTagsList :: C.Config -> IO [Tag]
+getTagsList conf = bracket (connectDB conf) close
   $ \conn -> query conn selectQuery ()
   where selectQuery = "SELECT * FROM tags;"
 
-deleteTag :: Integer -> IO GHC.Int.Int64
-deleteTag tId = bracket (connect connectInfo) close
-    $ \conn -> execute conn deleteQuery [tId]
-    where deleteQuery = "DELETE FROM tags WHERE tag_id=?"
+deleteTag :: C.Config -> Integer -> IO GHC.Int.Int64
+deleteTag conf tId = bracket (connectDB conf) close
+  $ \conn -> execute conn deleteQuery [tId]
+  where deleteQuery = "DELETE FROM tags WHERE tag_id=?"

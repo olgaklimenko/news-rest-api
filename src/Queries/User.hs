@@ -7,29 +7,29 @@ import           Models.User
 import           Server.Database
 import           Control.Exception              ( bracket )
 import qualified Data.Text                     as T
+import qualified Data.Configurator.Types       as C
 import           Data.String
 import           GHC.Int
 
-getUsersList :: IO [User]
-getUsersList = getList "users"
+getUsersList :: C.Config -> IO [User]
+getUsersList = (`getList` "users")
 
-getUserById :: Integer -> IO (Maybe User)
-getUserById uid = bracket (connect connectInfo) close $ \conn -> do
+getUserById :: C.Config -> Integer -> IO (Maybe User)
+getUserById conf uid = bracket (connectDB conf) close $ \conn -> do
   user <- query conn q [uid]
   case user of
-    [] -> pure Nothing
-    (user:_) -> pure (Just user)
-   where
-      q = "SELECT * FROM users WHERE user_id=?"
+    []         -> pure Nothing
+    (user : _) -> pure (Just user)
+  where q = "SELECT * FROM users WHERE user_id=?"
 
-addUserToDB :: UserRaw -> IO User
-addUserToDB UserRaw {..} = bracket (connect connectInfo) close $ \conn ->
+addUserToDB :: C.Config -> UserRaw -> IO User
+addUserToDB conf UserRaw {..} = bracket (connectDB conf) close $ \conn ->
   head <$> query conn
                  insertUserQuery
                  (userRawName, userRawSurname, userRawAvatar)
 
-updateUser :: T.Text -> UserRawPartial -> IO User
-updateUser uid user = bracket (connect connectInfo) close $ \conn -> do
+updateUser :: C.Config -> T.Text -> UserRawPartial -> IO User
+updateUser conf uid user = bracket (connectDB conf) close $ \conn -> do
   let qText = (updateUserQuery uid user)
   print qText
   res <- query conn qText ()
@@ -40,29 +40,27 @@ insertUserQuery =
   "INSERT INTO users(user_id, name, surname, avatar, date_created, is_admin) VALUES (default,?,?,?,CURRENT_TIMESTAMP,default) \
   \ RETURNING user_id, name, surname, avatar, date_created, is_admin"
 
-
 updateUserQuery :: T.Text -> UserRawPartial -> Query
 updateUserQuery uid UserRawPartial {..} =
-  let
-    toQuery  = fromString . T.unpack
-    nameExpr = maybe "" (\name -> "name = '" <> name <> "'") userRawPartialName
-    surnameExpr =
-      maybe "" (\name -> "surname = '" <> name <> "'") userRawPartialSurname
-    avatarExpr =
-      maybe "" (\name -> "avatar = '" <> name <> "'") userRawPartialAvatar
-    params =
-      toQuery
-        . T.intercalate ","
-        . filter (not . T.null)
-        $ [nameExpr, surnameExpr, avatarExpr]
-  in
-    "UPDATE users SET "
-    <> params
-    <> "WHERE user_id="
-    <> toQuery uid
-    <> "RETURNING user_id, name, surname, avatar, date_created, is_admin"
+  let toQuery = fromString . T.unpack
+      nameExpr =
+          maybe "" (\name -> "name = '" <> name <> "'") userRawPartialName
+      surnameExpr =
+          maybe "" (\name -> "surname = '" <> name <> "'") userRawPartialSurname
+      avatarExpr =
+          maybe "" (\name -> "avatar = '" <> name <> "'") userRawPartialAvatar
+      params =
+          toQuery
+            . T.intercalate ","
+            . filter (not . T.null)
+            $ [nameExpr, surnameExpr, avatarExpr]
+  in  "UPDATE users SET "
+        <> params
+        <> "WHERE user_id="
+        <> toQuery uid
+        <> "RETURNING user_id, name, surname, avatar, date_created, is_admin"
 
-deleteUser :: Integer -> IO GHC.Int.Int64
-deleteUser cId = bracket (connect connectInfo) close
+deleteUser :: C.Config -> Integer -> IO GHC.Int.Int64
+deleteUser conf cId = bracket (connectDB conf) close
   $ \conn -> execute conn deleteQuery [cId]
   where deleteQuery = "DELETE FROM users WHERE user_id=?"

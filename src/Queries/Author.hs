@@ -4,7 +4,8 @@
 module Queries.Author where
 
 import           Database.PostgreSQL.Simple
-import           Data.Text                     as T
+import qualified Data.Text                     as T
+import qualified Data.Configurator.Types       as C
 import           Control.Exception
 import           Data.Time
 import           Models.User
@@ -12,8 +13,8 @@ import           Models.Author
 import           Queries.User
 import           Server.Database
 
-getAuthorsList :: IO [(User, Author)]
-getAuthorsList = bracket (connect connectInfo) close $ \conn ->
+getAuthorsList :: C.Config -> IO [(User, Author)]
+getAuthorsList conf = bracket (connectDB conf) close $ \conn ->
   fmap inductiveTupleToTuple
     <$> (query_ conn authorsQuery :: IO [User :. Author])
  where
@@ -24,9 +25,9 @@ getAuthorsList = bracket (connect connectInfo) close $ \conn ->
 
 inductiveTupleToTuple (u :. a) = (u, a)
 
-addAuthorToDB :: (UserRaw, AuthorRaw) -> IO (User, Author)
-addAuthorToDB (UserRaw {..}, AuthorRaw {..}) =
-  bracket (connect connectInfo) close $ \conn -> do
+addAuthorToDB :: C.Config -> (UserRaw, AuthorRaw) -> IO (User, Author)
+addAuthorToDB conf (UserRaw {..}, AuthorRaw {..}) =
+  bracket (connectDB conf) close $ \conn -> do
     (user : _) <- query conn
                         insertUserQuery
                         (userRawName, userRawSurname, userRawAvatar)
@@ -39,8 +40,8 @@ insertAuthorQuery :: Query
 insertAuthorQuery =
   "INSERT INTO authors(author_id, user_id, description) VALUES (default,?,?) RETURNING author_id, user_id, description"
 
-getAuthorById :: Integer -> IO (User, Author)
-getAuthorById aId = bracket (connect connectInfo) close $ \conn -> do
+getAuthorById :: C.Config -> Integer -> IO (User, Author)
+getAuthorById conf aId = bracket (connectDB conf) close $ \conn -> do
   (userWithAuthor : _) <-
     fmap inductiveTupleToTuple
       <$> (query conn authorsQuery [aId] :: IO [User :. Author])

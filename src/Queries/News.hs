@@ -5,6 +5,7 @@ module Queries.News where
 import           Database.PostgreSQL.Simple
 import           Control.Exception
 import qualified Data.Text                     as T
+import qualified Data.Configurator.Types       as C
 import           Models.News
 import           Models.Tag
 import           Models.Category
@@ -17,9 +18,9 @@ import           Server.Database
 import           Data.String
 import           Server.Helpers
 
-createNews :: (NewsRaw, NewsTagsRaw) -> IO (News, [Tag], [Category], (User, Author))
-createNews (NewsRaw {..}, newsTagRaw) =
-    bracket (connect connectInfo) close $ \conn -> do
+createNews :: C.Config -> (NewsRaw, NewsTagsRaw) -> IO (News, [Tag], [Category], (User, Author))
+createNews conf (NewsRaw {..}, newsTagRaw) =
+    bracket (connectDB conf) close $ \conn -> do
         let tagIds = ntrTagIds newsTagRaw
         (news : _) <- query
             conn
@@ -34,8 +35,8 @@ createNews (NewsRaw {..}, newsTagRaw) =
             query conn (insertNewsTagsQuery (newsId news) tagIds) () :: IO
                 [NewsTag]
         tags       <- query conn (selectTagsFilteredByIdQuery tagIds) ()
-        categories <- getCategoryWithParents $ Just (newsCategoryId news)
-        userWithAuthor <- getAuthorById (newsAuthorId news)
+        categories <- getCategoryWithParents conf (Just $ newsCategoryId news)
+        userWithAuthor <- getAuthorById conf (newsAuthorId news)
         pure (news, tags, categories, userWithAuthor)
 
 insertNewsQuery :: Query

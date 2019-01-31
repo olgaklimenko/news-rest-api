@@ -7,15 +7,17 @@ import           Network.HTTP.Types
 import qualified Data.ByteString.Lazy          as LB
 import qualified Data.ByteString.Lazy.Char8    as BC
 import qualified Data.Text                     as T
+import qualified Data.Configurator.Types       as C
+
 import           Data.Aeson
 import           Server.Database
 import           Server.Handlers
 import           Queries.Author
 import           Serializers.Author
 
-getAuthorsListHandler :: Handler
-getAuthorsListHandler req = do
-    usersAndAuthors <- getAuthorsList
+getAuthorsListHandler :: C.Config -> Handler
+getAuthorsListHandler conf req = do
+    usersAndAuthors <- getAuthorsList conf
     let authors          = authorToResponse <$> usersAndAuthors
         printableAuthors = encode authors
     putStrLn "Students page accessed"
@@ -23,8 +25,8 @@ getAuthorsListHandler req = do
                        [("Content-Type", "application/json")]
                        printableAuthors
 
-createAuthorHandler :: Handler
-createAuthorHandler req = do
+createAuthorHandler :: C.Config -> Handler
+createAuthorHandler conf req = do
     body <- requestBody req
     let createAuthorData =
             eitherDecode $ LB.fromStrict body :: Either
@@ -33,7 +35,7 @@ createAuthorHandler req = do
     either reportParseError createAuthor createAuthorData
   where
     createAuthor authorData = do
-        (user, author) <- addAuthorToDB $ requestToAuthor authorData
+        (user, author) <- addAuthorToDB conf (requestToAuthor authorData)
         let authorJSON = encode $ authorToResponse (user, author)
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]

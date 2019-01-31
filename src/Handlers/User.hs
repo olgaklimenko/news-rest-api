@@ -7,6 +7,7 @@ import           Network.HTTP.Types
 import qualified Data.ByteString.Lazy          as LB
 import qualified Data.ByteString.Lazy.Char8    as BC
 import qualified Data.Text                     as T
+import qualified Data.Configurator.Types       as C
 import           Data.Aeson
 import           Server.Database
 import           Server.Helpers
@@ -15,15 +16,15 @@ import           Queries.User
 import           Serializers.User
 
 
-createUserHandler :: Handler
-createUserHandler req = do
+createUserHandler :: C.Config -> Handler
+createUserHandler conf req = do
     body <- requestBody req
     let createUserData =
             eitherDecode $ LB.fromStrict body :: Either String CreateUserRequest
     either (pure . reportParseError) createUser createUserData
   where
     createUser userData = do
-        user <- addUserToDB $ requestToUser userData
+        user <- addUserToDB conf (requestToUser userData)
         let userJSON = encode $ userToResponse user
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]
@@ -33,8 +34,8 @@ getUserIdFromUrl :: [T.Text] -> Either String T.Text
 getUserIdFromUrl ["api", "users", userId] = Right userId
 getUserIdFromUrl path = Left $ "incorrect_data" <> (show $ mconcat path)
 
-updateUserHandler :: Handler
-updateUserHandler req = do
+updateUserHandler :: C.Config -> Handler
+updateUserHandler conf req = do
     body <- requestBody req
     let updateUserData =
             eitherDecode $ LB.fromStrict body :: Either String UpdateUserRequest
@@ -45,28 +46,28 @@ updateUserHandler req = do
     goUpdateUser :: T.Text -> UpdateUserRequest -> IO Response
     goUpdateUser uid userData = do
         let partial = requestToUpdateUser userData
-        user <- updateUser uid partial
+        user <- updateUser conf uid partial
         let userJSON = encode $ userToResponse user
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]
                            userJSON
 
-getUsersListHandler :: Handler
-getUsersListHandler req = do
-    users <- getUsersList
+getUsersListHandler :: C.Config -> Handler
+getUsersListHandler conf req = do
+    users <- getUsersList conf
     let usersJSON = encode $ userToResponse <$> users
     pure $ responseLBS status200
                        [("Content-Type", "application/json")]
                        usersJSON
 
-deleteUserHandler :: Handler
-deleteUserHandler req = either
+deleteUserHandler :: C.Config -> Handler
+deleteUserHandler conf req = either
     invalidIdResponse
     successResponse
     (getUserIdFromUrl (pathInfo req) >>= textToInteger)
   where
     successResponse uId = do
-        deleted <- deleteUser uId
+        deleted <- deleteUser conf uId
         case deleted of
             0 -> notFoundResponse
             _ -> pure $ responseLBS status204

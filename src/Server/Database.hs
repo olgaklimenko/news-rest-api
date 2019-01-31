@@ -6,23 +6,34 @@ import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.Migration
 import           System.Directory               ( createDirectoryIfMissing )
 import qualified Data.Text                     as T
-                                         hiding ( head )
+import qualified Data.Configurator.Types       as C
 import           Control.Exception
 import           Data.Monoid                    ( (<>) )
 import           GHC.Int
+import           Server.Config
 
-initializeDB :: IO ()
-initializeDB = do
+connectInfo :: C.Config -> IO ConnectInfo
+connectInfo conf = do
+  host     <- getConf conf "database.host"
+  port     <- getConf conf "database.port"
+  user     <- getConf conf "database.user"
+  password <- getConf conf "database.password"
+  database <- getConf conf "database.database"
+
+  pure $ ConnectInfo { connectHost     = host
+                     , connectPort     = port
+                     , connectUser     = user
+                     , connectPassword = password
+                     , connectDatabase = database
+                     }
+
+connectDB :: C.Config -> IO Connection
+connectDB conf = connectInfo conf >>= connect
+
+initializeDB :: C.Config -> IO ()
+initializeDB conf = do
   createDirectoryIfMissing False "./DBMigrations"
-  bracket (connect connectInfo) close migrate
-
-connectInfo :: ConnectInfo
-connectInfo = ConnectInfo { connectHost     = "" --omitting the host parameter will cause libpq to attempt to connect via unix domain sockets 
-                          , connectPort     = 5432
-                          , connectUser     = "olga"
-                          , connectPassword = "" --connecting via unix sockets tends to use the peer authentication method, which is very secure and does not require a password
-                          , connectDatabase = "news"
-                          }
+  bracket (connectDB conf) close migrate
 
 migrate :: Connection -> IO ()
 migrate conn = do
@@ -32,6 +43,6 @@ migrate conn = do
     _                  -> return ()
   where cmds = [MigrationInitialization, MigrationDirectory "./DBMigrations"]
 
-getList :: FromRow a => Query -> IO [a]
-getList tableName = bracket (connect connectInfo) close
+getList :: FromRow a => C.Config -> Query -> IO [a]
+getList conf tableName = bracket (connectDB conf) close
   $ \conn -> query_ conn $ "SELECT * FROM " <> tableName

@@ -4,17 +4,18 @@ module Routes.User where
 
 import qualified Data.ByteString               as BS
 import qualified Data.Text                     as T
+import qualified Data.Configurator.Types       as C
 import           Server.Routes
 import           Server.Handlers
 import           Handlers.User
 
-userRoutes :: [(Route, Handler)]
-userRoutes =
+userRoutes :: C.Config -> [(Route, Handler)]
+userRoutes conf =
     [
-        (createUserRoute, createUserHandler)
-        , (updateUserRoute, updateUserHandler)
-        , (getUsersListRoute, getUsersListHandler)
-        , (deleteUserRoute, deleteUserHandler)
+        (createUserRoute, createUserHandler conf)
+        , (updateUserRoute, updateUserHandler conf)
+        , (getUsersListRoute, getUsersListHandler conf)
+        , (deleteUserRoute, deleteUserHandler conf)
     ]
 
 createUserRoute :: Route

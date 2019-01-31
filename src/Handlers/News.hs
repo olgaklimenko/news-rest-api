@@ -8,6 +8,7 @@ import           Network.HTTP.Types
 import qualified Data.ByteString.Lazy          as LB
 import qualified Data.ByteString.Lazy.Char8    as BC
 import qualified Data.Text                     as T
+import qualified Data.Configurator.Types       as C
 import           Data.Aeson
 import           Server.Database
 import           Server.Handlers
@@ -16,8 +17,8 @@ import           Queries.News
 import           Models.News
 import           Serializers.News
 
-createNewsHandler :: Handler
-createNewsHandler req = do
+createNewsHandler :: C.Config -> Handler
+createNewsHandler conf req = do
     body <- requestBody req
     let newsData =
             eitherDecode $ LB.fromStrict body :: Either
@@ -26,7 +27,7 @@ createNewsHandler req = do
     either (pure . reportParseError) addNews newsData
   where
     addNews newsData = do
-        news <- createNews $ requestToNews newsData
+        news <- createNews conf $ requestToNews newsData
         let categoryJSON = encode $ newsToResponse news
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]
