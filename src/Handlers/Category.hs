@@ -16,11 +16,15 @@ import           Server.Helpers
 import           Queries.Category
 import           Models.Category
 import           Serializers.Category
-
+import           Data.Maybe
+import           Server.Config
+import           Server.Pagination
 
 getCategoriesListHandler :: C.Config -> Handler
 getCategoriesListHandler conf req = do
-    categories <- getCategoriesList conf 
+    maxLimit <- Limit <$> getConf conf "pagination.max_limit"
+    let pagination = getLimitOffset maxLimit req
+    categories <- getCategoriesList conf pagination
     let categoriesJson = encode $ categoryToResponse <$> categories
 
     pure $ responseLBS status200
@@ -67,7 +71,7 @@ getCategoryWithParentsHandler conf req = either
         [("Content-Type", "application/json")]
         ("Invalid id in url: " <> BC.pack errorMsg)
 
-updateCategoryHandler :: C.Config ->Handler
+updateCategoryHandler :: C.Config -> Handler
 updateCategoryHandler conf req = either
     invalidIdResponse
     successResponse
