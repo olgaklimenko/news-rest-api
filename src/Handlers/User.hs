@@ -1,13 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Handlers.User where
 
+import           Control.Monad.Reader
+import           Control.Monad.IO.Class
 import qualified Data.ByteString               as B
 import           Network.Wai
 import           Network.HTTP.Types
 import qualified Data.ByteString.Lazy          as LB
 import qualified Data.ByteString.Lazy.Char8    as BC
 import qualified Data.Text                     as T
-import qualified Data.Configurator.Types       as C
 import           Data.Aeson
 import           Server.Database
 import           Server.Helpers
@@ -16,15 +17,17 @@ import           Queries.User
 import           Serializers.User
 
 
-createUserHandler :: C.Config -> Handler
-createUserHandler conf req = do
-    body <- requestBody req
+createUserHandler :: Handler
+createUserHandler = do
+    req  <- asks hRequest
+    conn <- asks hConn
+    body <- liftIO $ requestBody req
     let createUserData =
             eitherDecode $ LB.fromStrict body :: Either String CreateUserRequest
-    either (pure . reportParseError) createUser createUserData
+    liftIO $ either (pure . reportParseError) (createUser conn) createUserData
   where
-    createUser userData = do
-        user <- addUserToDB conf (requestToUser userData)
+    createUser conn userData = do
+        user <- addUserToDB conn (requestToUser userData)
         let userJSON = encode $ userToResponse user
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]
@@ -34,40 +37,46 @@ getUserIdFromUrl :: [T.Text] -> Either String T.Text
 getUserIdFromUrl ["api", "users", userId] = Right userId
 getUserIdFromUrl path = Left $ "incorrect_data" <> (show $ mconcat path)
 
-updateUserHandler :: C.Config -> Handler
-updateUserHandler conf req = do
-    body <- requestBody req
+updateUserHandler :: Handler
+updateUserHandler = do
+    req  <- asks hRequest
+    conn <- asks hConn
+    body <- liftIO $ requestBody req
     let updateUserData =
             eitherDecode $ LB.fromStrict body :: Either String UpdateUserRequest
         userId = either error id (getUserIdFromUrl $ pathInfo req)
 
-    either (pure . reportParseError) (goUpdateUser userId) updateUserData
+    liftIO $ either (pure . reportParseError)
+                    (goUpdateUser conn userId)
+                    updateUserData
   where
-    goUpdateUser :: T.Text -> UpdateUserRequest -> IO Response
-    goUpdateUser uid userData = do
+    goUpdateUser conn uid userData = do
         let partial = requestToUpdateUser userData
-        user <- updateUser conf uid partial
+        user <- liftIO $ updateUser conn uid partial
         let userJSON = encode $ userToResponse user
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]
                            userJSON
 
-getUsersListHandler :: C.Config -> Handler
-getUsersListHandler conf req = do
-    users <- getUsersList conf
+getUsersListHandler :: Handler
+getUsersListHandler = do
+    conn  <- asks hConn
+    users <- liftIO $ getUsersList conn
     let usersJSON = encode $ userToResponse <$> users
     pure $ responseLBS status200
                        [("Content-Type", "application/json")]
                        usersJSON
 
-deleteUserHandler :: C.Config -> Handler
-deleteUserHandler conf req = either
-    invalidIdResponse
-    successResponse
-    (getUserIdFromUrl (pathInfo req) >>= textToInteger)
+deleteUserHandler :: Handler
+deleteUserHandler = do
+    req  <- asks hRequest
+    conn <- asks hConn
+    either invalidIdResponse
+           (successResponse conn)
+           (getUserIdFromUrl (pathInfo req) >>= textToInteger)
   where
-    successResponse uId = do
-        deleted <- deleteUser conf uId
+    successResponse conn uId = do
+        deleted <- liftIO $ deleteUser conn uId
         case deleted of
             0 -> notFoundResponse
             _ -> pure $ responseLBS status204

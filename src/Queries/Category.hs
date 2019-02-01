@@ -46,8 +46,7 @@ insertCategoryQuery CategoryRaw {..} =
 
 
 getCategoriesList :: Connection -> IO [Category]
-getCategoriesList conn = bracket (connectDB conn) close
-  $ \conn -> query conn selectQuery ()
+getCategoriesList conn = query conn selectQuery ()
   where selectQuery = "SELECT * FROM categories;"
 
 getCategoryWithParents :: Connection -> Maybe Integer -> IO [Category]
@@ -90,6 +89,5 @@ updateCategoryQuery cId CategoryRawPartial {..} =
         <> " RETURNING category_id, name, parent_id"
 
 deleteCategory :: Connection -> Integer -> IO GHC.Int.Int64
-deleteCategory conn cId = bracket (connectDB conn) close
-  $ \conn -> execute conn deleteQuery [cId]
+deleteCategory conn cId = execute conn deleteQuery [cId]
   where deleteQuery = "DELETE FROM categories WHERE category_id=?"

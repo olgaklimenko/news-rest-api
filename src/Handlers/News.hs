@@ -2,6 +2,8 @@
 
 module Handlers.News where
 
+import           Control.Monad.Reader
+import           Control.Monad.IO.Class
 import qualified Data.ByteString               as B
 import           Network.Wai
 import           Network.HTTP.Types
@@ -17,17 +19,19 @@ import           Queries.News
 import           Models.News
 import           Serializers.News
 
-createNewsHandler :: C.Config -> Handler
-createNewsHandler conf req = do
-    body <- requestBody req
+createNewsHandler :: Handler
+createNewsHandler = do
+    req <- asks hRequest
+    conn <- asks hConn
+    body <- liftIO $ requestBody req
     let newsData =
             eitherDecode $ LB.fromStrict body :: Either
                     String
                     CreateNewsRequest
-    either (pure . reportParseError) addNews newsData
+    either (pure . reportParseError) (addNews conn) newsData
   where
-    addNews newsData = do
-        news <- createNews conf $ requestToNews newsData
+    addNews conn newsData = do
+        news <- liftIO $ createNews conn $ requestToNews newsData
         let categoryJSON = encode $ newsToResponse news
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]

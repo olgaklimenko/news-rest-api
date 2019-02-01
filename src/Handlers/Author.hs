@@ -37,10 +37,11 @@ createAuthorHandler = do
             eitherDecode $ LB.fromStrict body :: Either
                     String
                     CreateAuthorRequest
-    either reportParseError createAuthor createAuthorData
+    liftIO $ either reportParseError (createAuthor conn) createAuthorData
   where
-    createAuthor authorData = do
-        (user, author) <- addAuthorToDB conn (requestToAuthor authorData)
+    createAuthor conn authorData = do
+        (user, author) <- liftIO
+            $ addAuthorToDB conn (requestToAuthor authorData)
         let authorJSON = encode $ authorToResponse (user, author)
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]

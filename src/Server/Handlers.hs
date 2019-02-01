@@ -33,9 +33,15 @@ reportParseError err = responseLBS status400
                                    [("Content-Type", "plain/text")]
                                    ("Parse error: " <> BC.pack err)
 
-notFoundResponse :: IO Response
+notFoundResponse :: (Applicative m) => m Response
 notFoundResponse = pure
   $ responseLBS status404 [("Content-Type", "application/json")] "Not Found"
 
-hasNoPermissionResponse :: IO Response
+hasNoPermissionResponse :: (Applicative m) => m Response
 hasNoPermissionResponse = notFoundResponse
+
+invalidIdResponse :: (Applicative m) => String -> m Response
+invalidIdResponse errorMsg = pure $ responseLBS
+        status400
+        [("Content-Type", "application/json")]
+        ("Invalid id in url: " <> BC.pack errorMsg)

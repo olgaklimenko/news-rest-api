@@ -1,7 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Server.Middlewares where
-
+import           Control.Monad.Reader
+import           Control.Monad.IO.Class
 import qualified Data.Text                     as T
 import qualified Data.ByteString.Char8         as BS
 import qualified Data.Configurator.Types       as C
@@ -16,13 +17,17 @@ data Permission = Admin
     | Owner (User -> Integer -> IO Bool)
     | Regular
 
-checkPermission :: C.Config -> Permission -> Handler -> Handler
-checkPermission conf Admin handler req = do
-    user <- getUser conf req
-    checkUserAdmin user handler req
-checkPermission conf (Owner f) handler req = do
-    user <- getUser conf req
-    checkUserOwner user f handler req
+checkPermission :: Permission -> Handler -> Handler
+checkPermission Admin handler req = do
+    conn <- asks hConn
+    req <- asks hRequest
+    user <- liftIO $ getUser conn req
+    checkUserAdmin user handler
+checkPermission (Owner f) handler req = do
+    conn <- asks hConn
+    req <- asks hRequest
+    user <- liftIO $ getUser conn req
+    checkUserOwner user f handler
 
 checkUserAdmin :: Maybe User -> Handler -> Handler
 checkUserAdmin Nothing     _       _   = hasNoPermissionResponse
