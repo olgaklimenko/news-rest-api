@@ -12,8 +12,8 @@ import           Server.Database
 import           Server.Helpers
 import           GHC.Int
 
-createTag :: C.Config -> TagRaw -> IO Tag
-createTag conf TagRaw {..} = bracket (connectDB conf) close $ \conn -> do
+createTag :: Connection -> TagRaw -> IO Tag
+createTag conn TagRaw {..} = do
   (tag : _) <- query conn insertTagQuery [tagRawName] :: IO [Tag]
   pure tag
  where
@@ -29,8 +29,8 @@ selectTagsFilteredByIdQuery tIds =
   idsToText t (x : []) = idsToText (t <> x) []
   idsToText t (x : xs) = idsToText (t <> x <> ",") xs
 
-getTagById :: C.Config -> Integer -> IO (Maybe Tag)
-getTagById conf uid = bracket (connectDB conf) close $ \conn -> do
+getTagById :: Connection -> Integer -> IO (Maybe Tag)
+getTagById conn uid = do
   tag <- query conn q [uid]
   case tag of
     []        -> pure Nothing
@@ -40,20 +40,18 @@ getTagById conf uid = bracket (connectDB conf) close $ \conn -> do
 isOwnerOfTag :: User -> Integer -> IO Bool
 isOwnerOfTag _ _ = pure False
 
-updateTag :: C.Config -> Integer -> TagRaw -> IO Tag
-updateTag conf tId TagRaw {..} = bracket (connectDB conf) close $ \conn -> do
+updateTag :: Connection -> Integer -> TagRaw -> IO Tag
+updateTag conn tId TagRaw {..} = do
   (tag : _) <- query conn updateTagQuery (tagRawName, tId)
   pure tag
  where
   updateTagQuery =
     "UPDATE tags SET name=? WHERE tag_id=? RETURNING tag_id, name"
 
-getTagsList :: C.Config -> IO [Tag]
-getTagsList conf = bracket (connectDB conf) close
-  $ \conn -> query conn selectQuery ()
+getTagsList :: Connection -> IO [Tag]
+getTagsList conn = query conn selectQuery ()
   where selectQuery = "SELECT * FROM tags;"
 
-deleteTag :: C.Config -> Integer -> IO GHC.Int.Int64
-deleteTag conf tId = bracket (connectDB conf) close
-  $ \conn -> execute conn deleteQuery [tId]
+deleteTag :: Connection -> Integer -> IO GHC.Int.Int64
+deleteTag conn tId = execute conn deleteQuery [tId]
   where deleteQuery = "DELETE FROM tags WHERE tag_id=?"

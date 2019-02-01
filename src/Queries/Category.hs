@@ -12,8 +12,8 @@ import           Data.String
 import           Server.Helpers
 import           GHC.Int
 
-createCategory :: C.Config -> CategoryRaw -> IO Category
-createCategory conf category = bracket (connectDB conf) close $ \conn -> do
+createCategory :: Connection -> CategoryRaw -> IO Category
+createCategory conn category = do
   (category : _) <- query conn (insertCategoryQuery category) ()
   pure category
 
@@ -45,28 +45,28 @@ insertCategoryQuery CategoryRaw {..} =
         <> ") RETURNING category_id, name, parent_id"
 
 
-getCategoriesList :: C.Config -> IO [Category]
-getCategoriesList conf = bracket (connectDB conf) close
+getCategoriesList :: Connection -> IO [Category]
+getCategoriesList conn = bracket (connectDB conn) close
   $ \conn -> query conn selectQuery ()
   where selectQuery = "SELECT * FROM categories;"
 
-getCategoryWithParents :: C.Config -> Maybe Integer -> IO [Category]
-getCategoryWithParents conf Nothing = pure []
-getCategoryWithParents conf pId     = reverse <$> go [] pId
+getCategoryWithParents :: Connection -> Maybe Integer -> IO [Category]
+getCategoryWithParents conn Nothing = pure []
+getCategoryWithParents conn pId     = reverse <$> go [] pId
  where
   go acc Nothing    = pure acc
   go acc (Just pId) = do
-    pCat <- getCategory conf pId
+    pCat <- getCategory conn pId
     go (pCat : acc) (categoryParentId pCat)
 
-getCategory :: C.Config -> Integer -> IO Category
-getCategory conf categoryId = bracket (connectDB conf) close $ \conn -> do
+getCategory :: Connection -> Integer -> IO Category
+getCategory conn categoryId = do
   (category : _) <- query conn selectQuery [categoryId]
   pure category
   where selectQuery = "SELECT * FROM categories where category_id = ?;"
 
-updateCategory :: C.Config -> Integer -> CategoryRawPartial -> IO Category
-updateCategory conf cId category = bracket (connectDB conf) close $ \conn -> do
+updateCategory :: Connection -> Integer -> CategoryRawPartial -> IO Category
+updateCategory conn cId category = do
   let log = updateCategoryQuery cId category
   print log
   res <- query conn (updateCategoryQuery cId category) ()
@@ -89,7 +89,7 @@ updateCategoryQuery cId CategoryRawPartial {..} =
         <> toQuery (T.pack $ show cId)
         <> " RETURNING category_id, name, parent_id"
 
-deleteCategory :: C.Config -> Integer -> IO GHC.Int.Int64
-deleteCategory conf cId = bracket (connectDB conf) close
+deleteCategory :: Connection -> Integer -> IO GHC.Int.Int64
+deleteCategory conn cId = bracket (connectDB conn) close
   $ \conn -> execute conn deleteQuery [cId]
   where deleteQuery = "DELETE FROM categories WHERE category_id=?"

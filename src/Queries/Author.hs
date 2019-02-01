@@ -13,8 +13,8 @@ import           Models.Author
 import           Queries.User
 import           Server.Database
 
-getAuthorsList :: C.Config -> IO [(User, Author)]
-getAuthorsList conf = bracket (connectDB conf) close $ \conn ->
+getAuthorsList :: Connection -> IO [(User, Author)]
+getAuthorsList conn = 
   fmap inductiveTupleToTuple
     <$> (query_ conn authorsQuery :: IO [User :. Author])
  where
@@ -25,9 +25,8 @@ getAuthorsList conf = bracket (connectDB conf) close $ \conn ->
 
 inductiveTupleToTuple (u :. a) = (u, a)
 
-addAuthorToDB :: C.Config -> (UserRaw, AuthorRaw) -> IO (User, Author)
-addAuthorToDB conf (UserRaw {..}, AuthorRaw {..}) =
-  bracket (connectDB conf) close $ \conn -> do
+addAuthorToDB :: Connection -> (UserRaw, AuthorRaw) -> IO (User, Author)
+addAuthorToDB conn (UserRaw {..}, AuthorRaw {..}) = do
     (user : _) <- query conn
                         insertUserQuery
                         (userRawName, userRawSurname, userRawAvatar)
@@ -40,8 +39,8 @@ insertAuthorQuery :: Query
 insertAuthorQuery =
   "INSERT INTO authors(author_id, user_id, description) VALUES (default,?,?) RETURNING author_id, user_id, description"
 
-getAuthorById :: C.Config -> Integer -> IO (User, Author)
-getAuthorById conf aId = bracket (connectDB conf) close $ \conn -> do
+getAuthorById :: Connection -> Integer -> IO (User, Author)
+getAuthorById conn aId = do
   (userWithAuthor : _) <-
     fmap inductiveTupleToTuple
       <$> (query conn authorsQuery [aId] :: IO [User :. Author])

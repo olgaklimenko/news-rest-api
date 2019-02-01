@@ -18,26 +18,27 @@ import           Server.Database
 import           Data.String
 import           Server.Helpers
 
-createNews :: C.Config -> (NewsRaw, NewsTagsRaw) -> IO (News, [Tag], [Category], (User, Author))
-createNews conf (NewsRaw {..}, newsTagRaw) =
-    bracket (connectDB conf) close $ \conn -> do
-        let tagIds = ntrTagIds newsTagRaw
-        (news : _) <- query
-            conn
-            insertNewsQuery
-            ( newsRawTitle
-            , newsRawAuthorId
-            , newsRawCategoryId
-            , newsRawContent
-            , newsRawMainPhoto
-            )
-        newsTags <-
-            query conn (insertNewsTagsQuery (newsId news) tagIds) () :: IO
-                [NewsTag]
-        tags       <- query conn (selectTagsFilteredByIdQuery tagIds) ()
-        categories <- getCategoryWithParents conf (Just $ newsCategoryId news)
-        userWithAuthor <- getAuthorById conf (newsAuthorId news)
-        pure (news, tags, categories, userWithAuthor)
+createNews
+    :: Connection
+    -> (NewsRaw, NewsTagsRaw)
+    -> IO (News, [Tag], [Category], (User, Author))
+createNews conn (NewsRaw {..}, newsTagRaw) = do
+    let tagIds = ntrTagIds newsTagRaw
+    (news : _) <- query
+        conn
+        insertNewsQuery
+        ( newsRawTitle
+        , newsRawAuthorId
+        , newsRawCategoryId
+        , newsRawContent
+        , newsRawMainPhoto
+        )
+    newsTags <-
+        query conn (insertNewsTagsQuery (newsId news) tagIds) () :: IO [NewsTag]
+    tags           <- query conn (selectTagsFilteredByIdQuery tagIds) ()
+    categories     <- getCategoryWithParents conn (Just $ newsCategoryId news)
+    userWithAuthor <- getAuthorById conn (newsAuthorId news)
+    pure (news, tags, categories, userWithAuthor)
 
 insertNewsQuery :: Query
 insertNewsQuery =

@@ -14,20 +14,25 @@ import           Server.Database
 import           Server.Handlers
 import           Queries.Author
 import           Serializers.Author
+import           Control.Monad.Reader
+import           Control.Monad.IO.Class
 
-getAuthorsListHandler :: C.Config -> Handler
-getAuthorsListHandler conf req = do
-    usersAndAuthors <- getAuthorsList conf
+getAuthorsListHandler :: Handler
+getAuthorsListHandler = do
+    conn            <- asks hConn
+    usersAndAuthors <- liftIO $ getAuthorsList conn
     let authors          = authorToResponse <$> usersAndAuthors
         printableAuthors = encode authors
-    putStrLn "Students page accessed"
     pure $ responseLBS status200
                        [("Content-Type", "application/json")]
                        printableAuthors
 
-createAuthorHandler :: C.Config -> Handler
-createAuthorHandler conf req = do
-    body <- requestBody req
+
+createAuthorHandler :: Handler
+createAuthorHandler = do
+    conn <- asks hConn
+    req  <- asks hRequest
+    body <- liftIO $ requestBody req
     let createAuthorData =
             eitherDecode $ LB.fromStrict body :: Either
                     String
@@ -35,7 +40,7 @@ createAuthorHandler conf req = do
     either reportParseError createAuthor createAuthorData
   where
     createAuthor authorData = do
-        (user, author) <- addAuthorToDB conf (requestToAuthor authorData)
+        (user, author) <- addAuthorToDB conn (requestToAuthor authorData)
         let authorJSON = encode $ authorToResponse (user, author)
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]

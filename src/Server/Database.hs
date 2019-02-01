@@ -43,6 +43,5 @@ migrate conn = do
     _                  -> return ()
   where cmds = [MigrationInitialization, MigrationDirectory "./DBMigrations"]
 
-getList :: FromRow a => C.Config -> Query -> IO [a]
-getList conf tableName = bracket (connectDB conf) close
-  $ \conn -> query_ conn $ "SELECT * FROM " <> tableName
+getList :: FromRow a => Connection -> Query -> IO [a]
+getList conn tableName = query_ conn $ "SELECT * FROM " <> tableName

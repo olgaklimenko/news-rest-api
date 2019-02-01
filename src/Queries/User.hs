@@ -11,25 +11,25 @@ import qualified Data.Configurator.Types       as C
 import           Data.String
 import           GHC.Int
 
-getUsersList :: C.Config -> IO [User]
+getUsersList :: Connection -> IO [User]
 getUsersList = (`getList` "users")
 
-getUserById :: C.Config -> Integer -> IO (Maybe User)
-getUserById conf uid = bracket (connectDB conf) close $ \conn -> do
+getUserById :: Connection -> Integer -> IO (Maybe User)
+getUserById conn uid = do
   user <- query conn q [uid]
   case user of
     []         -> pure Nothing
     (user : _) -> pure (Just user)
   where q = "SELECT * FROM users WHERE user_id=?"
 
-addUserToDB :: C.Config -> UserRaw -> IO User
-addUserToDB conf UserRaw {..} = bracket (connectDB conf) close $ \conn ->
+addUserToDB :: Connection -> UserRaw -> IO User
+addUserToDB conn UserRaw {..} =
   head <$> query conn
                  insertUserQuery
                  (userRawName, userRawSurname, userRawAvatar)
 
-updateUser :: C.Config -> T.Text -> UserRawPartial -> IO User
-updateUser conf uid user = bracket (connectDB conf) close $ \conn -> do
+updateUser :: Connection -> T.Text -> UserRawPartial -> IO User
+updateUser conn uid user = do
   let qText = (updateUserQuery uid user)
   print qText
   res <- query conn qText ()
@@ -60,7 +60,6 @@ updateUserQuery uid UserRawPartial {..} =
         <> toQuery uid
         <> "RETURNING user_id, name, surname, avatar, date_created, is_admin"
 
-deleteUser :: C.Config -> Integer -> IO GHC.Int.Int64
-deleteUser conf cId = bracket (connectDB conf) close
-  $ \conn -> execute conn deleteQuery [cId]
+deleteUser :: Connection -> Integer -> IO GHC.Int.Int64
+deleteUser conn cId = execute conn deleteQuery [cId]
   where deleteQuery = "DELETE FROM users WHERE user_id=?"
