@@ -1,10 +1,17 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE InstanceSigs #-}
 
 module Models.Tag where
+
+import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.ToRow
 import           Database.PostgreSQL.Simple.ToField
 import qualified Data.Text                     as T
+import           Data.Proxy
+
+import           Server.Database
 
 data Tag = Tag {
     tagId :: Integer,
@@ -27,3 +34,7 @@ instance ToRow Tag where
 
 instance ToRow TagRaw where
     toRow TagRaw {..} = [toField tagRawName]
+
+instance Persistent Tag where
+    tableName :: Proxy entity -> Query
+    tableName _ = "tags"

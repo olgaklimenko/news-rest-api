@@ -8,13 +8,14 @@ import qualified Data.Configurator.Types       as C
 import           Server.Routes
 import           Server.Handlers
 import           Handlers.User
+import Serializers.User (userToResponse)
 
 userRoutes :: C.Config -> [(Route, Handler)]
 userRoutes conf =
     [
         (createUserRoute, createUserHandler conf)
         , (updateUserRoute, updateUserHandler conf)
-        , (getUsersListRoute, getUsersListHandler conf)
+        , (getUsersListRoute, list userToResponse conf)
         , (deleteUserRoute, deleteUserHandler conf)
     ]
 

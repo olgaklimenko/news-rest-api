@@ -46,5 +46,8 @@ news-rest-api.cabal
 ehthumbs.db
 Thumbs.db
 
+.vscode
+.history
+
 settings.json
 conf/local.conf

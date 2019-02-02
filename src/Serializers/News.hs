@@ -70,12 +70,11 @@ requestToNews (CreateNewsRequest NewsRequestT {..}) =
 newsToResponse :: (News, [Tag], [Category], (User, Author)) -> NewsResponse
 newsToResponse (News {..}, tags, categories, (user,author)) = NewsResponse
     { cnrTitle     = newsTitle
-    , cnrAuthor    = authorResp (user,author)
+    , cnrAuthor    = authorToResponse (author, user)
     , cnrCategory  = categoryResp categories
     , cnrContent   = newsContent
     , cnrMainPhoto = newsMainPhoto
     , cnrTags      = tagsResp tags
     }  where 
-        authorResp = authorToResponse
         categoryResp (x:xs) = categoriesToNestedCategoryResponse x xs
         tagsResp tags = tagToResponse <$> tags 

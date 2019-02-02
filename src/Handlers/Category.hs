@@ -24,12 +24,14 @@ getCategoriesListHandler :: C.Config -> Handler
 getCategoriesListHandler conf req = do
     maxLimit <- Limit <$> getConf conf "pagination.max_limit"
     let pagination = getLimitOffset maxLimit req
-    categories <- getCategoriesList conf pagination
+    conn <- connectDB conf
+    categories <- select conn pagination 
     let categoriesJson = encode $ categoryToResponse <$> categories
 
     pure $ responseLBS status200
                        [("Content-Type", "application/json")]
                        categoriesJson
+
 
 getCategoryIdFromUrl :: [T.Text] -> Either String T.Text
 getCategoryIdFromUrl ["api", "categories", categoryId] = Right categoryId

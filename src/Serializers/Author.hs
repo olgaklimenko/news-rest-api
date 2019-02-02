@@ -5,8 +5,8 @@ module Serializers.Author where
 import           Data.Aeson
 import qualified Data.Text                     as T
 import           Data.Time
-import Models.User
-import Models.Author
+import           Models.User
+import           Models.Author
 
 data CreateAuthorRequest = CreateAuthorRequest {
   createAuthorRequestName :: T.Text,
@@ -27,17 +27,16 @@ data AuthorResponse = AuthorResponse {
 }
 
 instance ToJSON AuthorResponse where
-  toJSON (AuthorResponse name surname avatar desc id uid date isAdmin) =
-    object
-      [ "name" .= name
-      , "surname" .= surname
-      , "avatar" .= avatar
-      , "description" .= desc
-      , "author_id" .= id
-      , "user_id" .= uid
-      , "date_created" .= date
-      , "is_admin" .= isAdmin
-      ]
+  toJSON (AuthorResponse name surname avatar desc id uid date isAdmin) = object
+    [ "name" .= name
+    , "surname" .= surname
+    , "avatar" .= avatar
+    , "description" .= desc
+    , "author_id" .= id
+    , "user_id" .= uid
+    , "date_created" .= date
+    , "is_admin" .= isAdmin
+    ]
 
 instance FromJSON CreateAuthorRequest where
   parseJSON = withObject "CreateAuthorRequest" $ \v ->
@@ -60,8 +59,8 @@ requestToAuthor CreateAuthorRequest {..} =
   , AuthorRaw { authorRawDescription = createAuthorRequestDescription }
   )
 
-authorToResponse :: (User, Author) -> AuthorResponse
-authorToResponse (User {..}, Author {..}) = AuthorResponse
+authorToResponse :: (Author, User) -> AuthorResponse
+authorToResponse (Author {..}, User {..}) = AuthorResponse
   { authorResponseName        = userName
   , authorResponseSurname     = userSurname
   , authorResponseAvatar      = userAvatar

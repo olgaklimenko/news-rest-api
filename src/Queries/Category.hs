@@ -46,11 +46,10 @@ insertCategoryQuery CategoryRaw {..} =
         <> ") RETURNING category_id, name, parent_id"
 
 
-getCategoriesList :: C.Config -> (Limit, Offset) -> IO [Category]
-getCategoriesList conf (limit, offset) = bracket (connectDB conf) close
-  $ \conn -> do 
-    print (limit, offset)
-    query conn selectQuery [unwrapLimit limit, unwrapOffset offset]
+getCategoriesList :: Connection -> (Limit, Offset) -> IO [Category]
+getCategoriesList conn (limit, offset) = do
+  print (limit, offset)
+  query conn selectQuery [unwrapLimit limit, unwrapOffset offset]
   where selectQuery = "SELECT * FROM categories LIMIT ? OFFSET ?;"
 
 getCategoryWithParents :: C.Config -> Maybe Integer -> IO [Category]
@@ -96,3 +95,4 @@ deleteCategory :: C.Config -> Integer -> IO GHC.Int.Int64
 deleteCategory conf cId = bracket (connectDB conf) close
   $ \conn -> execute conn deleteQuery [cId]
   where deleteQuery = "DELETE FROM categories WHERE category_id=?"
+

@@ -13,7 +13,10 @@ import           Server.Database
 import           Server.Helpers
 import           Server.Handlers
 import           Queries.User
+import           Models.User
 import           Serializers.User
+import Server.Config
+import Server.Pagination
 
 
 createUserHandler :: C.Config -> Handler
@@ -54,7 +57,10 @@ updateUserHandler conf req = do
 
 getUsersListHandler :: C.Config -> Handler
 getUsersListHandler conf req = do
-    users <- getUsersList conf
+    conn <- connectDB conf
+    maxLimit <- Limit <$> getConf conf "pagination.max_limit"
+    let pagination = getLimitOffset maxLimit req
+    users <- select conn pagination 
     let usersJSON = encode $ userToResponse <$> users
     pure $ responseLBS status200
                        [("Content-Type", "application/json")]

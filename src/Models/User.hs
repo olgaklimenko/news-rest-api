@@ -1,11 +1,17 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE InstanceSigs #-}
+
 module Models.User where
 
+import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.ToRow
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.ToField
 import qualified Data.Text                     as T
 import           Data.Time
+import           Data.Proxy
 
+import           Server.Database
 
 data User = User {
   userId :: Integer,
@@ -30,3 +36,7 @@ data UserRawPartial = UserRawPartial {
   userRawPartialSurname :: Maybe T.Text,
   userRawPartialAvatar :: Maybe T.Text
 }
+
+instance Persistent User where
+  tableName :: Proxy entity -> Query
+  tableName _ = "users"

@@ -13,8 +13,10 @@ import           Server.Database
 import           Server.Handlers
 import           Server.Helpers
 import           Queries.Tag
+import           Models.Tag
 import           Serializers.Tag
-
+import Server.Config
+import Server.Pagination
 
 getTagIdFromUrl :: [T.Text] -> Either String T.Text
 getTagIdFromUrl ["api", "tags", tagId] = Right tagId
@@ -58,12 +60,15 @@ updateTagHandler conf req = either
 
 getTagsListHandler :: C.Config -> Handler
 getTagsListHandler conf req = do
-    categories <- getTagsList conf
-    let categoriesJson = encode $ tagToResponse <$> categories
+    conn <- connectDB conf
+    maxLimit <- Limit <$> getConf conf "pagination.max_limit"
+    let pagination = getLimitOffset maxLimit req
+    tags <- select conn pagination 
 
+    let tagsJson = encode $ tagToResponse <$> tags
     pure $ responseLBS status200
                        [("Content-Type", "application/json")]
-                       categoriesJson
+                       tagsJson
 
 deleteTagHandler :: C.Config -> Handler
 deleteTagHandler conf req = either

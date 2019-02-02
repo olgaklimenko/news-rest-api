@@ -13,11 +13,17 @@ import           Data.Aeson
 import           Server.Database
 import           Server.Handlers
 import           Queries.Author
+import           Models.Author
 import           Serializers.Author
+import           Server.Config
+import           Server.Pagination
 
 getAuthorsListHandler :: C.Config -> Handler
 getAuthorsListHandler conf req = do
-    usersAndAuthors <- getAuthorsList conf
+    maxLimit <- Limit <$> getConf conf "pagination.max_limit"
+    let pagination = getLimitOffset maxLimit req
+    conn            <- connectDB conf
+    usersAndAuthors <- select conn pagination
     let authors          = authorToResponse <$> usersAndAuthors
         printableAuthors = encode authors
     putStrLn "Students page accessed"
@@ -36,7 +42,7 @@ createAuthorHandler conf req = do
   where
     createAuthor authorData = do
         (user, author) <- addAuthorToDB conf (requestToAuthor authorData)
-        let authorJSON = encode $ authorToResponse (user, author)
+        let authorJSON = encode $ authorToResponse (author, user)
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]
                            authorJSON
