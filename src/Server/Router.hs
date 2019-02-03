@@ -4,6 +4,11 @@ module Server.Router where
 
 import qualified Data.ByteString               as BS
 import qualified Data.Text                     as T
+import           Server.Config
+import           Server.Database
+import           Control.Exception              ( bracket )
+import qualified Database.PostgreSQL.Simple    as P
+import           Control.Monad.IO.Class
 import           Network.Wai
 import           Network.HTTP.Types
 import           Server.Handlers
@@ -29,11 +34,14 @@ isCorrectRoute (DynamicRoute s route) (x : xs) method =
   isCorrectRoute route xs method
 
 
-route :: [(Route, Handler)] -> Request -> MonadHandler Response
+route :: [(Route, Handler)] -> Request -> IO Response
 route [] req =
   pure $ responseLBS status404 [("Content-Type", "text/html")] "Not found"
-route (h : hs) req | isCorrectRoute currentRoute path method = snd h
-                   | otherwise                               = route hs req
+route (h : hs) req
+  | isCorrectRoute currentRoute path method = do
+    conf <- loadConfig
+    bracket (connectDB conf) P.close $ \conn -> runHandler conf req conn $ snd h
+  | otherwise = route hs req
  where
   currentRoute = fst h
   path         = pathInfo req

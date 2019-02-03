@@ -16,8 +16,8 @@ import           Network.HTTP.Types
 routingTable :: [(Route, Handler)]
 routingTable =
   authorRoutes
-    -- ++ categoryRoutes
-    -- ++ userRoutes
-    -- ++ newsRoutes
-    -- ++ tagRoutes
+    ++ categoryRoutes
+    ++ userRoutes
+    ++ newsRoutes
+    ++ tagRoutes
     ++ [(MethodRoute "GET", okResponse)]

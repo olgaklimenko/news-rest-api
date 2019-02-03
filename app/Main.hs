@@ -9,10 +9,9 @@ import qualified Data.Text                     as T
 import           Data.Aeson
 import qualified Data.ByteString.Lazy          as LB
 import qualified Data.ByteString.Lazy.Char8    as BC
-import Server.Config
+import           Server.Config
 import           Server.Router
 import           Routes.RoutingTable
-import           Control.Monad.IO.Class
 
 app :: Application
 app req respond = route routingTable req >>= respond
