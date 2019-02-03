@@ -1,5 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DefaultSignatures #-}
+
 module Server.Database where
 
 import           Database.PostgreSQL.Simple
@@ -11,6 +14,8 @@ import           Control.Exception
 import           Data.Monoid                    ( (<>) )
 import           GHC.Int
 import           Server.Config
+import           Server.Pagination
+import           Data.Proxy
 
 connectInfo :: C.Config -> IO ConnectInfo
 connectInfo conf = do
@@ -43,5 +48,9 @@ migrate conn = do
     _                  -> return ()
   where cmds = [MigrationInitialization, MigrationDirectory "./DBMigrations"]
 
-getList :: FromRow a => Connection -> Query -> IO [a]
-getList conn tableName = query_ conn $ "SELECT * FROM " <> tableName
+class Persistent entity where
+  tableName :: Proxy entity -> Query
+  select :: Connection -> (Limit, Offset) -> IO [entity]
+  default select :: (FromRow entity) => Connection -> (Limit, Offset) -> IO [entity]
+  select conn (limit, offset) = query conn selectQuery [unwrapLimit limit, unwrapOffset offset]
+    where selectQuery = "SELECT * FROM " <> tableName (Proxy :: Proxy entity) <> " LIMIT ? OFFSET ?;"

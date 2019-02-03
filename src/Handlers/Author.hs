@@ -14,19 +14,10 @@ import           Server.Database
 import           Server.Handlers
 import           Queries.Author
 import           Serializers.Author
+import           Server.Config
+import           Server.Pagination
 import           Control.Monad.Reader
 import           Control.Monad.IO.Class
-
-getAuthorsListHandler :: Handler
-getAuthorsListHandler = do
-    conn            <- asks hConn
-    usersAndAuthors <- liftIO $ getAuthorsList conn
-    let authors          = authorToResponse <$> usersAndAuthors
-        printableAuthors = encode authors
-    pure $ responseLBS status200
-                       [("Content-Type", "application/json")]
-                       printableAuthors
-
 
 createAuthorHandler :: Handler
 createAuthorHandler = do
@@ -42,7 +33,8 @@ createAuthorHandler = do
     createAuthor conn authorData = do
         (user, author) <- liftIO
             $ addAuthorToDB conn (requestToAuthor authorData)
-        let authorJSON = encode $ authorToResponse (user, author)
+        let authorJSON = encode $ authorToResponse (author, user)
+
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]
                            authorJSON

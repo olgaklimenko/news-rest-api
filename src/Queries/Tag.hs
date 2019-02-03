@@ -48,10 +48,6 @@ updateTag conn tId TagRaw {..} = do
   updateTagQuery =
     "UPDATE tags SET name=? WHERE tag_id=? RETURNING tag_id, name"
 
-getTagsList :: Connection -> IO [Tag]
-getTagsList conn = query conn selectQuery ()
-  where selectQuery = "SELECT * FROM tags;"
-
 deleteTag :: Connection -> Integer -> IO GHC.Int.Int64
 deleteTag conn tId = execute conn deleteQuery [tId]
   where deleteQuery = "DELETE FROM tags WHERE tag_id=?"

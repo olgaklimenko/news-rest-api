@@ -15,6 +15,8 @@ import           Server.Helpers
 import           Server.Handlers
 import           Queries.User
 import           Serializers.User
+import           Server.Pagination
+import           Server.Config
 
 
 createUserHandler :: Handler
@@ -57,15 +59,6 @@ updateUserHandler = do
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]
                            userJSON
-
-getUsersListHandler :: Handler
-getUsersListHandler = do
-    conn  <- asks hConn
-    users <- liftIO $ getUsersList conn
-    let usersJSON = encode $ userToResponse <$> users
-    pure $ responseLBS status200
-                       [("Content-Type", "application/json")]
-                       usersJSON
 
 deleteUserHandler :: Handler
 deleteUserHandler = do

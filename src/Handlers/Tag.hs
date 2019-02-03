@@ -16,7 +16,8 @@ import           Server.Handlers
 import           Server.Helpers
 import           Queries.Tag
 import           Serializers.Tag
-
+import           Server.Config
+import           Server.Pagination
 
 getTagIdFromUrl :: [T.Text] -> Either String T.Text
 getTagIdFromUrl ["api", "tags", tagId] = Right tagId
@@ -59,21 +60,13 @@ updateTagHandler = do
                                tagJSON
 
 
-getTagsListHandler :: Handler
-getTagsListHandler = do
-    conn <- asks hConn
-    categories <- liftIO $ getTagsList conn
-    let categoriesJson = encode $ tagToResponse <$> categories
-
-    pure $ responseLBS status200
-                       [("Content-Type", "application/json")]
-                       categoriesJson
-
 deleteTagHandler :: Handler
-deleteTagHandler = do 
-    req <- asks hRequest
+deleteTagHandler = do
+    req  <- asks hRequest
     conn <- asks hConn
-    either invalidIdResponse (successResponse conn) (getTagIdFromUrl (pathInfo req) >>= textToInteger)
+    either invalidIdResponse
+           (successResponse conn)
+           (getTagIdFromUrl (pathInfo req) >>= textToInteger)
   where
     successResponse conn tagId = do
         deleted <- liftIO $ deleteTag conn tagId

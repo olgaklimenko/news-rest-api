@@ -11,6 +11,7 @@ import           Server.Database
 import           Data.String
 import           Server.Helpers
 import           GHC.Int
+import           Server.Pagination
 
 createCategory :: Connection -> CategoryRaw -> IO Category
 createCategory conn category = do
@@ -44,14 +45,9 @@ insertCategoryQuery CategoryRaw {..} =
         <> values
         <> ") RETURNING category_id, name, parent_id"
 
-
-getCategoriesList :: Connection -> IO [Category]
-getCategoriesList conn = query conn selectQuery ()
-  where selectQuery = "SELECT * FROM categories;"
-
-getCategoryWithParents :: Connection -> Maybe Integer -> IO [Category]
-getCategoryWithParents conn Nothing = pure []
-getCategoryWithParents conn pId     = reverse <$> go [] pId
+getCategoryWithParents :: C.Config -> Maybe Integer -> IO [Category]
+getCategoryWithParents conf Nothing = pure []
+getCategoryWithParents conf pId     = reverse <$> go [] pId
  where
   go acc Nothing    = pure acc
   go acc (Just pId) = do

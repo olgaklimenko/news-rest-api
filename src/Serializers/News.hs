@@ -70,7 +70,7 @@ requestToNews (CreateNewsRequest NewsRequestT {..}) =
 newsToResponse :: (News, [Tag], [Category], (User, Author)) -> NewsResponse
 newsToResponse (News {..}, tags, categories, (user,author)) = NewsResponse
     { cnrTitle     = newsTitle
-    , cnrAuthor    = authorResp (user,author)
+    , cnrAuthor    = authorResp (author, user)
     , cnrCategory  = categoryResp categories
     , cnrContent   = newsContent
     , cnrMainPhoto = newsMainPhoto

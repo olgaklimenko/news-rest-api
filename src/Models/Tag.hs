@@ -1,10 +1,15 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE InstanceSigs #-}
 
 module Models.Tag where
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.ToRow
 import           Database.PostgreSQL.Simple.ToField
 import qualified Data.Text                     as T
+import           Server.Database
+import           Server.Pagination
+import           Database.PostgreSQL.Simple
 
 data Tag = Tag {
     tagId :: Integer,
@@ -27,3 +32,7 @@ instance ToRow Tag where
 
 instance ToRow TagRaw where
     toRow TagRaw {..} = [toField tagRawName]
+
+
+instance Persistent Tag where
+    tableName _ = "tags"

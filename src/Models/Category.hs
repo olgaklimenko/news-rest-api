@@ -1,11 +1,15 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE InstanceSigs #-}
 
 module Models.Category where
 import           Database.PostgreSQL.Simple.ToRow
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.ToField
 import           Data.Text                     as T
-
+import           Server.Database
+import           Server.Pagination
+import           Database.PostgreSQL.Simple
 data Category = Category {
     categoryId :: Integer,
     categoryName :: T.Text,
@@ -28,3 +32,6 @@ instance FromRow Category where
 instance ToRow Category where
     toRow Category {..} =
         [toField categoryId, toField categoryName, toField categoryParentId]
+
+instance Persistent Category where
+    tableName _ = "categories"

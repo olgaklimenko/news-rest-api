@@ -18,16 +18,9 @@ import           Server.Helpers
 import           Queries.Category
 import           Models.Category
 import           Serializers.Category
-
-getCategoriesListHandler :: Handler
-getCategoriesListHandler = do
-    conn       <- asks hConn
-    categories <- liftIO $ getCategoriesList conn
-    let categoriesJson = encode $ categoryToResponse <$> categories
-
-    pure $ responseLBS status200
-                       [("Content-Type", "application/json")]
-                       categoriesJson
+import           Data.Maybe
+import           Server.Config
+import           Server.Pagination
 
 getCategoryIdFromUrl :: [T.Text] -> Either String T.Text
 getCategoryIdFromUrl ["api", "categories", categoryId] = Right categoryId
@@ -81,6 +74,7 @@ updateCategoryHandler = do
     either invalidIdResponse
            (successResponse req conn)
            (getCategoryIdFromUrl (pathInfo req) >>= textToInteger)
+
   where
     successResponse req conn categoryId = do
         body <- liftIO $ requestBody req

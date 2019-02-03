@@ -11,11 +11,9 @@ import qualified Data.Configurator.Types       as C
 import           Data.String
 import           GHC.Int
 
-getUsersList :: Connection -> IO [User]
-getUsersList = (`getList` "users")
-
 getUserById :: Connection -> Integer -> IO (Maybe User)
 getUserById conn uid = do
+
   user <- query conn q [uid]
   case user of
     []         -> pure Nothing

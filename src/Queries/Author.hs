@@ -12,18 +12,7 @@ import           Models.User
 import           Models.Author
 import           Queries.User
 import           Server.Database
-
-getAuthorsList :: Connection -> IO [(User, Author)]
-getAuthorsList conn = 
-  fmap inductiveTupleToTuple
-    <$> (query_ conn authorsQuery :: IO [User :. Author])
- where
-  authorsQuery
-    = "SELECT  u.*, a.*  FROM authors AS a \
-    \INNER JOIN users AS u \
-    \ON u.user_id = a.user_id"
-
-inductiveTupleToTuple (u :. a) = (u, a)
+import           Server.Helpers
 
 addAuthorToDB :: Connection -> (UserRaw, AuthorRaw) -> IO (User, Author)
 addAuthorToDB conn (UserRaw {..}, AuthorRaw {..}) = do
