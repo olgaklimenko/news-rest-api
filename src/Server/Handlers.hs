@@ -11,8 +11,6 @@ import           Network.HTTP.Types
 import qualified Data.ByteString.Lazy          as LB
 import qualified Data.ByteString.Lazy.Char8    as LB8
 import qualified Data.Text                     as T
-import qualified Data.Configurator.Types       as C
-import           Data.Aeson
 import qualified Database.PostgreSQL.Simple    as P
 import qualified Text.Read                     as R
 import qualified Data.Configurator.Types       as C
@@ -41,6 +39,9 @@ reportParseError err = responseLBS status400
                                    [("Content-Type", "plain/text")]
                                    ("Parse error: " <> LB8.pack err)
 
+okResponse :: (Applicative m) => m Response
+okResponse = pure $ responseLBS status200 [("Content-Type", "text/html")] "Ok"
+
 notFoundResponse :: (Applicative m) => m Response
 notFoundResponse = pure
   $ responseLBS status404 [("Content-Type", "application/json")] "Not Found"
@@ -52,13 +53,15 @@ invalidIdResponse :: (Applicative m) => String -> m Response
 invalidIdResponse errorMsg = pure $ responseLBS
         status400
         [("Content-Type", "application/json")]
-        ("Invalid id in url: " <> BC.pack errorMsg)
+        ("Invalid id in url: " <> LB8.pack errorMsg)
 
-list :: (Persistent a, ToJSON b) => (a -> b) -> C.Config -> Handler
-list serialize conf req = do
-  maxLimit <- Limit <$> getConf conf "pagination.max_limit"
+list :: (Persistent a, ToJSON b) => (a -> b) ->  Handler
+list serialize = do
+  req <- asks hRequest
+  conf <- asks hConfig
+  conn <- asks hConn
+  maxLimit <- liftIO $ Limit <$> getConf conf "pagination.max_limit"
   let pagination = getLimitOffset maxLimit req
-  conn  <- connectDB conf
-  users <- select conn pagination
-  let usersJSON = encode $ serialize <$> users
-  pure $ responseLBS status200 [("Content-Type", "application/json")] usersJSON
+  entities <- liftIO $ select conn pagination
+  let entitiesJSON = encode $ serialize <$> entities
+  pure $ responseLBS status200 [("Content-Type", "application/json")] entitiesJSON

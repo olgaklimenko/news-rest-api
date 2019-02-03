@@ -10,12 +10,12 @@ import           Server.Handlers
 import           Handlers.User
 import           Serializers.User
 
-userRoutes :: C.Config -> [(Route, Handler)]
-userRoutes conf =
-    [ (createUserRoute  , createUserHandler conf)
-    , (updateUserRoute  , updateUserHandler conf)
-    , (getUsersListRoute, list userToResponse conf)
-    , (deleteUserRoute  , deleteUserHandler conf)
+userRoutes :: [(Route, Handler)]
+userRoutes =
+    [ (createUserRoute  , createUserHandler)
+    , (updateUserRoute  , updateUserHandler)
+    , (getUsersListRoute, list userToResponse)
+    , (deleteUserRoute  , deleteUserHandler)
     ]
 
 createUserRoute :: Route

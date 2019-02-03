@@ -5,7 +5,6 @@ module Queries.Tag where
 import           Database.PostgreSQL.Simple
 import           Control.Exception
 import qualified Data.Text                     as T
-import qualified Data.Configurator.Types       as C
 import           Models.Tag
 import           Models.User
 import           Server.Database

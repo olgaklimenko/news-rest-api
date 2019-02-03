@@ -4,18 +4,17 @@ module Routes.Tag where
 
 import qualified Data.ByteString               as BS
 import qualified Data.Text                     as T
-import qualified Data.Configurator.Types       as C
 import           Server.Routes
 import           Server.Handlers
 import           Handlers.Tag
 import           Serializers.Tag
 
-tagRoutes :: C.Config -> [(Route, Handler)]
-tagRoutes conf =
-    [ (createTagRoute  , createTagHandler conf)
-    , (updateTagRoute  , updateTagHandler conf)
-    , (getTagsListRoute, list tagToResponse conf)
-    , (deleteTagRoute  , deleteTagHandler conf)
+tagRoutes :: [(Route, Handler)]
+tagRoutes =
+    [ (createTagRoute  , createTagHandler)
+    , (updateTagRoute  , updateTagHandler)
+    , (getTagsListRoute, list tagToResponse)
+    , (deleteTagRoute  , deleteTagHandler)
     ]
 
 createTagRoute :: Route

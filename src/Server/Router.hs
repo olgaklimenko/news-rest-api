@@ -29,10 +29,10 @@ isCorrectRoute (DynamicRoute s route) (x : xs) method =
   isCorrectRoute route xs method
 
 
-route :: [(Route, Handler)] -> Request -> IO Response
+route :: [(Route, Handler)] -> Request -> MonadHandler Response
 route [] req =
   pure $ responseLBS status404 [("Content-Type", "text/html")] "Not found"
-route (h : hs) req | isCorrectRoute currentRoute path method = snd h req
+route (h : hs) req | isCorrectRoute currentRoute path method = snd h
                    | otherwise                               = route hs req
  where
   currentRoute = fst h

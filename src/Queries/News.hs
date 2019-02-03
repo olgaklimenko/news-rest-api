@@ -5,7 +5,6 @@ module Queries.News where
 import           Database.PostgreSQL.Simple
 import           Control.Exception
 import qualified Data.Text                     as T
-import qualified Data.Configurator.Types       as C
 import           Models.News
 import           Models.Tag
 import           Models.Category

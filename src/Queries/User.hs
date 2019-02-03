@@ -7,7 +7,6 @@ import           Models.User
 import           Server.Database
 import           Control.Exception              ( bracket )
 import qualified Data.Text                     as T
-import qualified Data.Configurator.Types       as C
 import           Data.String
 import           GHC.Int
 

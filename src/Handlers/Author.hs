@@ -28,7 +28,7 @@ createAuthorHandler = do
             eitherDecode $ LB.fromStrict body :: Either
                     String
                     CreateAuthorRequest
-    liftIO $ either reportParseError (createAuthor conn) createAuthorData
+    either reportParseError (createAuthor conn) createAuthorData
   where
     createAuthor conn authorData = do
         (user, author) <- liftIO

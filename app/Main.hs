@@ -12,11 +12,10 @@ import qualified Data.ByteString.Lazy.Char8    as BC
 import Server.Config
 import           Server.Router
 import           Routes.RoutingTable
+import           Control.Monad.IO.Class
 
 app :: Application
-app req respond = do
-  conf <- loadConfig
-  route (routingTable conf) req >>= respond
+app req respond = route routingTable req >>= respond
 
 logging :: Middleware
 logging app req respond = app

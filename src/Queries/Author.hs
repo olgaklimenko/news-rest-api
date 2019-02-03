@@ -5,7 +5,6 @@ module Queries.Author where
 
 import           Database.PostgreSQL.Simple
 import qualified Data.Text                     as T
-import qualified Data.Configurator.Types       as C
 import           Control.Exception
 import           Data.Time
 import           Models.User

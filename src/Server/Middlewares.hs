@@ -3,6 +3,7 @@
 module Server.Middlewares where
 import           Control.Monad.Reader
 import           Control.Monad.IO.Class
+import qualified Database.PostgreSQL.Simple    as P
 import qualified Data.Text                     as T
 import qualified Data.ByteString.Char8         as BS
 import qualified Data.Configurator.Types       as C
@@ -18,32 +19,33 @@ data Permission = Admin
     | Regular
 
 checkPermission :: Permission -> Handler -> Handler
-checkPermission Admin handler req = do
+checkPermission Admin handler = do
     conn <- asks hConn
     req <- asks hRequest
     user <- liftIO $ getUser conn req
     checkUserAdmin user handler
-checkPermission (Owner f) handler req = do
+checkPermission (Owner f) handler  = do
     conn <- asks hConn
     req <- asks hRequest
     user <- liftIO $ getUser conn req
     checkUserOwner user f handler
 
 checkUserAdmin :: Maybe User -> Handler -> Handler
-checkUserAdmin Nothing     _       _   = hasNoPermissionResponse
-checkUserAdmin (Just user) handler req = handler req
+checkUserAdmin Nothing     _     = hasNoPermissionResponse
+checkUserAdmin (Just user) handler = handler 
 
 checkUserOwner
     :: Maybe User -> (User -> Integer -> IO Bool) -> Handler -> Handler
-checkUserOwner Nothing _ _ _ = hasNoPermissionResponse
-checkUserOwner (Just user) f handler req
-    | userIsAdmin user = handler req
+checkUserOwner Nothing _ _ = hasNoPermissionResponse
+checkUserOwner (Just user) f handler
+    | userIsAdmin user = handler
     | otherwise = do
-        isOwner <- checkOwner
-        if isOwner then handler req else hasNoPermissionResponse
+        req <- asks hRequest
+        isOwner <- liftIO $ (checkOwner req)
+        if isOwner then handler else hasNoPermissionResponse
   where
-    checkOwner = maybe (pure False) (f user) objId
-    objId      = getObjectPk (pathInfo req)
+    checkOwner req = maybe (pure False) (f user) (objId req)
+    objId req     = getObjectPk (pathInfo req)
 
 getObjectPk :: [T.Text] -> Maybe Integer
 getObjectPk ["api", _, pk] = either (const Nothing) Just (textToInteger pk)
@@ -55,5 +57,5 @@ getAuthHeader req =
         bsId    = lookup "Authorization" headers
     in  bsId >>= (readMaybe . BS.unpack)
 
-getUser :: C.Config -> Request -> IO (Maybe User)
-getUser conf req = maybe (pure Nothing) (getUserById conf) $ getAuthHeader req
+getUser :: P.Connection -> Request -> IO (Maybe User)
+getUser conn req = maybe (pure Nothing) (getUserById conn) $ getAuthHeader req

@@ -5,7 +5,6 @@ module Queries.Category where
 import           Database.PostgreSQL.Simple
 import           Control.Exception
 import qualified Data.Text                     as T
-import qualified Data.Configurator.Types       as C
 import           Models.Category
 import           Server.Database
 import           Data.String
@@ -45,9 +44,9 @@ insertCategoryQuery CategoryRaw {..} =
         <> values
         <> ") RETURNING category_id, name, parent_id"
 
-getCategoryWithParents :: C.Config -> Maybe Integer -> IO [Category]
-getCategoryWithParents conf Nothing = pure []
-getCategoryWithParents conf pId     = reverse <$> go [] pId
+getCategoryWithParents :: Connection -> Maybe Integer -> IO [Category]
+getCategoryWithParents conn Nothing = pure []
+getCategoryWithParents conn pId     = reverse <$> go [] pId
  where
   go acc Nothing    = pure acc
   go acc (Just pId) = do
