@@ -14,7 +14,8 @@ import           Server.Handlers
 import           Server.Helpers
 import           Queries.Tag
 import           Serializers.Tag
-
+import           Server.Config
+import           Server.Pagination
 
 getTagIdFromUrl :: [T.Text] -> Either String T.Text
 getTagIdFromUrl ["api", "tags", tagId] = Right tagId
@@ -55,15 +56,6 @@ updateTagHandler conf req = either
         status400
         [("Content-Type", "application/json")]
         ("Invalid id in url: " <> BC.pack errorMsg)
-
-getTagsListHandler :: C.Config -> Handler
-getTagsListHandler conf req = do
-    categories <- getTagsList conf
-    let categoriesJson = encode $ tagToResponse <$> categories
-
-    pure $ responseLBS status200
-                       [("Content-Type", "application/json")]
-                       categoriesJson
 
 deleteTagHandler :: C.Config -> Handler
 deleteTagHandler conf req = either

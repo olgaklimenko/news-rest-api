@@ -14,6 +14,8 @@ import           Server.Helpers
 import           Server.Handlers
 import           Queries.User
 import           Serializers.User
+import           Server.Pagination
+import           Server.Config
 
 
 createUserHandler :: C.Config -> Handler
@@ -51,14 +53,6 @@ updateUserHandler conf req = do
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]
                            userJSON
-
-getUsersListHandler :: C.Config -> Handler
-getUsersListHandler conf req = do
-    users <- getUsersList conf
-    let usersJSON = encode $ userToResponse <$> users
-    pure $ responseLBS status200
-                       [("Content-Type", "application/json")]
-                       usersJSON
 
 deleteUserHandler :: C.Config -> Handler
 deleteUserHandler conf req = either

@@ -9,11 +9,12 @@ import qualified Data.Configurator.Types       as C
 import           Server.Routes
 import           Server.Handlers
 import           Handlers.Category
+import           Serializers.Category
 
 categoryRoutes :: C.Config -> [(Route, Handler)]
 categoryRoutes conf =
     [ (createCategoryRoute        , createCategoryHandler conf)
-    , (getCategoriesListRoute     , getCategoriesListHandler conf)
+    , (getCategoriesListRoute     , list categoryToResponse conf)
     , (getCategoryWithParentsRoute, getCategoryWithParentsHandler conf)
     , (updateCategoryRoute        , updateCategoryHandler conf)
     , (deleteCategoryRoute        , deleteCategoryHandler conf)

@@ -11,9 +11,6 @@ import qualified Data.Configurator.Types       as C
 import           Data.String
 import           GHC.Int
 
-getUsersList :: C.Config -> IO [User]
-getUsersList = (`getList` "users")
-
 getUserById :: C.Config -> Integer -> IO (Maybe User)
 getUserById conf uid = bracket (connectDB conf) close $ \conn -> do
   user <- query conn q [uid]

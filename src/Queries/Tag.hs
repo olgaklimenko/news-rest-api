@@ -48,11 +48,6 @@ updateTag conf tId TagRaw {..} = bracket (connectDB conf) close $ \conn -> do
   updateTagQuery =
     "UPDATE tags SET name=? WHERE tag_id=? RETURNING tag_id, name"
 
-getTagsList :: C.Config -> IO [Tag]
-getTagsList conf = bracket (connectDB conf) close
-  $ \conn -> query conn selectQuery ()
-  where selectQuery = "SELECT * FROM tags;"
-
 deleteTag :: C.Config -> Integer -> IO GHC.Int.Int64
 deleteTag conf tId = bracket (connectDB conf) close
   $ \conn -> execute conn deleteQuery [tId]

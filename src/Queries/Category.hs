@@ -45,14 +45,6 @@ insertCategoryQuery CategoryRaw {..} =
         <> values
         <> ") RETURNING category_id, name, parent_id"
 
-
-getCategoriesList :: C.Config -> (Limit, Offset) -> IO [Category]
-getCategoriesList conf (limit, offset) = bracket (connectDB conf) close
-  $ \conn -> do 
-    print (limit, offset)
-    query conn selectQuery [unwrapLimit limit, unwrapOffset offset]
-  where selectQuery = "SELECT * FROM categories LIMIT ? OFFSET ?;"
-
 getCategoryWithParents :: C.Config -> Maybe Integer -> IO [Category]
 getCategoryWithParents conf Nothing = pure []
 getCategoryWithParents conf pId     = reverse <$> go [] pId

@@ -8,7 +8,8 @@ import qualified Data.Configurator.Types       as C
 import           Server.Routes
 import           Server.Handlers
 import           Handlers.Author
-
+import           Handlers.User
+import           Serializers.Author
 
 createAuthorRoute :: Route
 createAuthorRoute = PathRoute "api" $ PathRoute "authors" $ MethodRoute "POST"
@@ -19,5 +20,5 @@ getAuthorsListRoute = PathRoute "api" $ PathRoute "authors" $ MethodRoute "GET"
 authorRoutes :: C.Config -> [(Route, Handler)]
 authorRoutes conf =
     [ (createAuthorRoute  , createAuthorHandler conf)
-    , (getAuthorsListRoute, getAuthorsListHandler conf)
+    , (getAuthorsListRoute, list authorToResponse conf)
     ]

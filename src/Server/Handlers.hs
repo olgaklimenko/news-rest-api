@@ -11,7 +11,10 @@ import qualified Data.Text                     as T
 import qualified Text.Read                     as R
 import qualified Data.Configurator.Types       as C
 import           Data.Aeson
-
+import           Database.PostgreSQL.Simple
+import           Server.Pagination
+import           Server.Database
+import           Server.Config
 
 type Handler = Request -> IO Response
 
@@ -26,3 +29,12 @@ notFoundResponse = pure
 
 hasNoPermissionResponse :: IO Response
 hasNoPermissionResponse = notFoundResponse
+
+list :: (Persistent a, ToJSON b) => (a -> b) -> C.Config -> Handler
+list serialize conf req = do
+  maxLimit <- Limit <$> getConf conf "pagination.max_limit"
+  let pagination = getLimitOffset maxLimit req
+  conn  <- connectDB conf
+  users <- select conn pagination
+  let usersJSON = encode $ serialize <$> users
+  pure $ responseLBS status200 [("Content-Type", "application/json")] usersJSON

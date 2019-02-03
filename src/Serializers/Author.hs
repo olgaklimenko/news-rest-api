@@ -60,8 +60,8 @@ requestToAuthor CreateAuthorRequest {..} =
   , AuthorRaw { authorRawDescription = createAuthorRequestDescription }
   )
 
-authorToResponse :: (User, Author) -> AuthorResponse
-authorToResponse (User {..}, Author {..}) = AuthorResponse
+authorToResponse :: (Author, User) -> AuthorResponse
+authorToResponse (Author {..}, User {..}) = AuthorResponse
   { authorResponseName        = userName
   , authorResponseSurname     = userSurname
   , authorResponseAvatar      = userAvatar

@@ -1,11 +1,15 @@
-module Models.User where
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE InstanceSigs #-}
 
+module Models.User where
 import           Database.PostgreSQL.Simple.ToRow
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.ToField
 import qualified Data.Text                     as T
 import           Data.Time
-
+import           Database.PostgreSQL.Simple
+import           Server.Database
+import           Server.Pagination
 
 data User = User {
   userId :: Integer,
@@ -30,3 +34,6 @@ data UserRawPartial = UserRawPartial {
   userRawPartialSurname :: Maybe T.Text,
   userRawPartialAvatar :: Maybe T.Text
 }
+
+instance Persistent User where
+  tableName _ = "users"

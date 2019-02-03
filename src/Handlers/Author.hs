@@ -14,16 +14,8 @@ import           Server.Database
 import           Server.Handlers
 import           Queries.Author
 import           Serializers.Author
-
-getAuthorsListHandler :: C.Config -> Handler
-getAuthorsListHandler conf req = do
-    usersAndAuthors <- getAuthorsList conf
-    let authors          = authorToResponse <$> usersAndAuthors
-        printableAuthors = encode authors
-    putStrLn "Students page accessed"
-    pure $ responseLBS status200
-                       [("Content-Type", "application/json")]
-                       printableAuthors
+import           Server.Config
+import           Server.Pagination
 
 createAuthorHandler :: C.Config -> Handler
 createAuthorHandler conf req = do
@@ -36,7 +28,7 @@ createAuthorHandler conf req = do
   where
     createAuthor authorData = do
         (user, author) <- addAuthorToDB conf (requestToAuthor authorData)
-        let authorJSON = encode $ authorToResponse (user, author)
+        let authorJSON = encode $ authorToResponse (author, user)
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]
                            authorJSON
