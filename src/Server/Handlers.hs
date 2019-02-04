@@ -18,8 +18,9 @@ import           Data.Aeson
 import           Server.Pagination
 import           Server.Database
 import           Server.Config
-import Server.Helpers (textToInteger)
+import           Server.Helpers                 ( textToInteger )
 import           GHC.Int
+import           Data.Proxy
 
 type Handler = MonadHandler Response
 
@@ -53,38 +54,39 @@ hasNoPermissionResponse = notFoundResponse
 
 invalidIdResponse :: (Applicative m) => String -> m Response
 invalidIdResponse errorMsg = pure $ responseLBS
-        status400
-        [("Content-Type", "application/json")]
-        ("Invalid id in url: " <> LB8.pack errorMsg)
+  status400
+  [("Content-Type", "application/json")]
+  ("Invalid id in url: " <> LB8.pack errorMsg)
 
-list :: (Persistent a, ToJSON b) => (a -> b) ->  Handler
+list :: (Persistent a, ToJSON b) => (a -> b) -> Handler
 list serialize = do
-  req <- asks hRequest
-  conf <- asks hConfig
-  conn <- asks hConn
+  req      <- asks hRequest
+  conf     <- asks hConfig
+  conn     <- asks hConn
   maxLimit <- liftIO $ Limit <$> getConf conf "pagination.max_limit"
   let pagination = getLimitOffset maxLimit req
   entities <- liftIO $ select conn pagination
   let entitiesJSON = encode $ serialize <$> entities
-  pure $ responseLBS status200 [("Content-Type", "application/json")] entitiesJSON
+  pure $ responseLBS status200
+                     [("Content-Type", "application/json")]
+                     entitiesJSON
 
 
 getCategoryIdFromUrl :: [T.Text] -> Either String T.Text
 getCategoryIdFromUrl ["api", "categories", categoryId] = Right categoryId
 getCategoryIdFromUrl path = Left $ "incorrect_data" <> (show $ mconcat path)
 
--- remove :: Handler
--- remove = do
---   conn <- asks hConn
---   req  <- asks hRequest
---   either invalidIdResponse
---           (successResponse conn)
---           (getCategoryIdFromUrl (pathInfo req) >>= textToInteger)
---   where
---     successResponse conn categoryId = do
---         deleted <- liftIO $ delete conn categoryId
---         case deleted of
---             0 -> notFoundResponse
---             _ -> pure $ responseLBS status204
---                                     [("Content-Type", "application/json")]
---                                     ""
+remove :: (Persistent entity) => Proxy entity -> Handler
+remove entityType = do
+  conn <- asks hConn
+  req  <- asks hRequest
+  either invalidIdResponse
+         (successResponse conn)
+         (getCategoryIdFromUrl (pathInfo req) >>= textToInteger)
+ where
+  successResponse conn categoryId = do
+    deleted <- liftIO $ delete entityType conn categoryId
+    case deleted of
+      0 -> notFoundResponse
+      _ ->
+        pure $ responseLBS status204 [("Content-Type", "application/json")] ""

@@ -9,6 +9,8 @@ import           Server.Routes
 import           Server.Handlers
 import           Handlers.Category
 import           Serializers.Category
+import           Data.Proxy
+import           Models.Category
 
 categoryRoutes :: [(Route, Handler)]
 categoryRoutes =
@@ -16,7 +18,7 @@ categoryRoutes =
     , (getCategoriesListRoute     , list categoryToResponse)
     , (getCategoryWithParentsRoute, getCategoryWithParentsHandler)
     , (updateCategoryRoute        , updateCategoryHandler)
-    , (deleteCategoryRoute        , deleteCategoryHandler)
+    , (deleteCategoryRoute        , remove (Proxy :: Proxy Category))
     ]
 
 createCategoryRoute :: Route
@@ -41,4 +43,3 @@ deleteCategoryRoute :: Route
 deleteCategoryRoute =
     PathRoute "api" $ PathRoute "categories" $ DynamicRoute "pk" $ MethodRoute
         "DELETE"
-

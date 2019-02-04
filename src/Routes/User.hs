@@ -9,13 +9,15 @@ import           Server.Routes
 import           Server.Handlers
 import           Handlers.User
 import           Serializers.User
+import           Data.Proxy
+import           Models.User
 
 userRoutes :: [(Route, Handler)]
 userRoutes =
     [ (createUserRoute  , createUserHandler)
     , (updateUserRoute  , updateUserHandler)
     , (getUsersListRoute, list userToResponse)
-    , (deleteUserRoute  , deleteUserHandler)
+    , (deleteUserRoute  , remove (Proxy :: Proxy User))
     ]
 
 createUserRoute :: Route

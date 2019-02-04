@@ -2,7 +2,6 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DefaultSignatures #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
 
 module Server.Database where
 
@@ -57,6 +56,6 @@ class Persistent entity where
     where selectQuery = "SELECT * FROM " <> tableName (Proxy :: Proxy entity) <> " LIMIT ? OFFSET ?;"
 
   deleteFilterField :: Proxy entity -> Query
-  delete :: Connection -> Integer -> IO GHC.Int.Int64
-  delete conn eId = execute conn deleteQuery [eId]
+  delete :: Proxy entity  -> Connection -> Integer -> IO GHC.Int.Int64
+  delete _ conn eId = execute conn deleteQuery [eId]
     where deleteQuery = "DELETE FROM " <> tableName (Proxy :: Proxy entity) <> " WHERE " <> deleteFilterField (Proxy :: Proxy entity) <> "=?"

@@ -8,13 +8,15 @@ import           Server.Routes
 import           Server.Handlers
 import           Handlers.Tag
 import           Serializers.Tag
+import           Data.Proxy
+import           Models.Tag
 
 tagRoutes :: [(Route, Handler)]
 tagRoutes =
     [ (createTagRoute  , createTagHandler)
     , (updateTagRoute  , updateTagHandler)
     , (getTagsListRoute, list tagToResponse)
-    , (deleteTagRoute  , deleteTagHandler)
+    , (deleteTagRoute  , remove (Proxy :: Proxy Tag))
     ]
 
 createTagRoute :: Route

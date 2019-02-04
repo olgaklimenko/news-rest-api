@@ -13,6 +13,7 @@ import           Server.Helpers
 import           Database.PostgreSQL.Simple
 import           Data.Proxy
 import           Models.User
+import           GHC.Int
 
 data Author = Author {
   authorId :: Integer,
@@ -30,10 +31,12 @@ data AuthorRaw = AuthorRaw {
 instance Persistent (Author, User) where
   tableName :: Proxy (Author, User) -> Query
   tableName _ = "authors"
+
   select :: Connection -> (Limit, Offset) -> IO [(Author, User)]
   select conn (limit, offset) =
     fmap inductiveTupleToTuple
-      <$> (query conn authorsQuery [unwrapLimit limit, unwrapOffset offset] :: IO [Author :. User]
+      <$> (query conn authorsQuery [unwrapLimit limit, unwrapOffset offset] :: IO
+              [Author :. User]
           )
    where
     authorsQuery
@@ -41,3 +44,16 @@ instance Persistent (Author, User) where
       \INNER JOIN users AS u \
       \ON u.user_id = a.user_id \
       \LIMIT ? OFFSET ?"
+
+  deleteFilterField :: Proxy entity -> Query
+  deleteFilterField _ = "author_id"
+
+  delete :: Proxy entity -> Connection -> Integer -> IO GHC.Int.Int64
+  delete _ conn eId = execute conn deleteQuery [eId]
+   where
+    deleteQuery =
+      "DELETE FROM "
+        <> tableName (Proxy :: Proxy entity)
+        <> " WHERE "
+        <> deleteFilterField (Proxy :: Proxy entity)
+        <> "=?"
