@@ -22,9 +22,6 @@ import           Data.Maybe
 import           Server.Config
 import           Server.Pagination
 
-getCategoryIdFromUrl :: [T.Text] -> Either String T.Text
-getCategoryIdFromUrl ["api", "categories", categoryId] = Right categoryId
-getCategoryIdFromUrl path = Left $ "incorrect_data" <> (show $ mconcat path)
 
 createCategoryHandler :: Handler
 createCategoryHandler = do

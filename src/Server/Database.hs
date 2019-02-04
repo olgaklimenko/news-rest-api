@@ -2,6 +2,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DefaultSignatures #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 
 module Server.Database where
 
@@ -12,10 +13,10 @@ import qualified Data.Text                     as T
 import qualified Data.Configurator.Types       as C
 import           Control.Exception
 import           Data.Monoid                    ( (<>) )
-import           GHC.Int
 import           Server.Config
 import           Server.Pagination
 import           Data.Proxy
+import           GHC.Int
 
 connectInfo :: C.Config -> IO ConnectInfo
 connectInfo conf = do
@@ -54,3 +55,8 @@ class Persistent entity where
   default select :: (FromRow entity) => Connection -> (Limit, Offset) -> IO [entity]
   select conn (limit, offset) = query conn selectQuery [unwrapLimit limit, unwrapOffset offset]
     where selectQuery = "SELECT * FROM " <> tableName (Proxy :: Proxy entity) <> " LIMIT ? OFFSET ?;"
+
+  deleteFilterField :: Proxy entity -> Query
+  delete :: Connection -> Integer -> IO GHC.Int.Int64
+  delete conn eId = execute conn deleteQuery [eId]
+    where deleteQuery = "DELETE FROM " <> tableName (Proxy :: Proxy entity) <> " WHERE " <> deleteFilterField (Proxy :: Proxy entity) <> "=?"

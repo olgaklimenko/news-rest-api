@@ -35,3 +35,4 @@ instance ToRow Category where
 
 instance Persistent Category where
     tableName _ = "categories"
+    deleteFilterField _ = "category_id"

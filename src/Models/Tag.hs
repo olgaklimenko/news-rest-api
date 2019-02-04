@@ -36,3 +36,4 @@ instance ToRow TagRaw where
 
 instance Persistent Tag where
     tableName _ = "tags"
+    deleteFilterField _ = "tag_id"

@@ -37,3 +37,4 @@ data UserRawPartial = UserRawPartial {
 
 instance Persistent User where
   tableName _ = "users"
+  deleteFilterField _ = "user_id"

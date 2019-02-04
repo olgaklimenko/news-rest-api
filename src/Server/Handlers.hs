@@ -18,6 +18,8 @@ import           Data.Aeson
 import           Server.Pagination
 import           Server.Database
 import           Server.Config
+import Server.Helpers (textToInteger)
+import           GHC.Int
 
 type Handler = MonadHandler Response
 
@@ -65,3 +67,24 @@ list serialize = do
   entities <- liftIO $ select conn pagination
   let entitiesJSON = encode $ serialize <$> entities
   pure $ responseLBS status200 [("Content-Type", "application/json")] entitiesJSON
+
+
+getCategoryIdFromUrl :: [T.Text] -> Either String T.Text
+getCategoryIdFromUrl ["api", "categories", categoryId] = Right categoryId
+getCategoryIdFromUrl path = Left $ "incorrect_data" <> (show $ mconcat path)
+
+-- remove :: Handler
+-- remove = do
+--   conn <- asks hConn
+--   req  <- asks hRequest
+--   either invalidIdResponse
+--           (successResponse conn)
+--           (getCategoryIdFromUrl (pathInfo req) >>= textToInteger)
+--   where
+--     successResponse conn categoryId = do
+--         deleted <- liftIO $ delete conn categoryId
+--         case deleted of
+--             0 -> notFoundResponse
+--             _ -> pure $ responseLBS status204
+--                                     [("Content-Type", "application/json")]
+--                                     ""
