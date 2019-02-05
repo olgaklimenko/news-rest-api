@@ -59,19 +59,3 @@ updateTagHandler = do
                                [("Content-Type", "application/json")]
                                tagJSON
 
-
-deleteTagHandler :: Handler
-deleteTagHandler = do
-    req  <- asks hRequest
-    conn <- asks hConn
-    either invalidIdResponse
-           (successResponse conn)
-           (getTagIdFromUrl (pathInfo req) >>= textToInteger)
-  where
-    successResponse conn tagId = do
-        deleted <- liftIO $ deleteTag conn tagId
-        case deleted of
-            0 -> notFoundResponse
-            _ -> pure $ responseLBS status204
-                                    [("Content-Type", "application/json")]
-                                    ""

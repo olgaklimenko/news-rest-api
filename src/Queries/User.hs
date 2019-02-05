@@ -57,6 +57,3 @@ updateUserQuery uid UserRawPartial {..} =
         <> toQuery uid
         <> "RETURNING user_id, name, surname, avatar, date_created, is_admin"
 
-deleteUser :: Connection -> Integer -> IO GHC.Int.Int64
-deleteUser conn cId = execute conn deleteQuery [cId]
-  where deleteQuery = "DELETE FROM users WHERE user_id=?"

@@ -83,6 +83,3 @@ updateCategoryQuery cId CategoryRawPartial {..} =
         <> toQuery (T.pack $ show cId)
         <> " RETURNING category_id, name, parent_id"
 
-deleteCategory :: Connection -> Integer -> IO GHC.Int.Int64
-deleteCategory conn cId = execute conn deleteQuery [cId]
-  where deleteQuery = "DELETE FROM categories WHERE category_id=?"

@@ -59,23 +59,3 @@ updateUserHandler = do
         pure $ responseLBS status200
                            [("Content-Type", "application/json")]
                            userJSON
-
-deleteUserHandler :: Handler
-deleteUserHandler = do
-    req  <- asks hRequest
-    conn <- asks hConn
-    either invalidIdResponse
-           (successResponse conn)
-           (getUserIdFromUrl (pathInfo req) >>= textToInteger)
-  where
-    successResponse conn uId = do
-        deleted <- liftIO $ deleteUser conn uId
-        case deleted of
-            0 -> notFoundResponse
-            _ -> pure $ responseLBS status204
-                                    [("Content-Type", "application/json")]
-                                    ""
-    invalidIdResponse errorMsg = pure $ responseLBS
-        status400
-        [("Content-Type", "application/json")]
-        ("Invalid id in url: " <> BC.pack errorMsg)

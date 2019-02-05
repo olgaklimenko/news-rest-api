@@ -92,20 +92,3 @@ updateCategoryHandler = do
             pure $ responseLBS status200
                                [("Content-Type", "application/json")]
                                categoryJSON
-
-
-deleteCategoryHandler :: Handler
-deleteCategoryHandler = do
-    conn <- asks hConn
-    req  <- asks hRequest
-    either invalidIdResponse
-           (successResponse conn)
-           (getCategoryIdFromUrl (pathInfo req) >>= textToInteger)
-  where
-    successResponse conn categoryId = do
-        deleted <- liftIO $ deleteCategory conn categoryId
-        case deleted of
-            0 -> notFoundResponse
-            _ -> pure $ responseLBS status204
-                                    [("Content-Type", "application/json")]
-                                    ""
