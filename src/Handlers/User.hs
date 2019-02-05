@@ -17,7 +17,8 @@ import           Queries.User
 import           Serializers.User
 import           Server.Pagination
 import           Server.Config
-
+import           Data.Proxy
+import           Models.User
 
 createUserHandler :: Handler
 createUserHandler = do
@@ -35,10 +36,6 @@ createUserHandler = do
                            [("Content-Type", "application/json")]
                            userJSON
 
-getUserIdFromUrl :: [T.Text] -> Either String T.Text
-getUserIdFromUrl ["api", "users", userId] = Right userId
-getUserIdFromUrl path = Left $ "incorrect_data" <> (show $ mconcat path)
-
 updateUserHandler :: Handler
 updateUserHandler = do
     req  <- asks hRequest
@@ -46,7 +43,8 @@ updateUserHandler = do
     body <- liftIO $ requestBody req
     let updateUserData =
             eitherDecode $ LB.fromStrict body :: Either String UpdateUserRequest
-        userId = either error id (getUserIdFromUrl $ pathInfo req)
+        userId =
+            either error id (getIdFromUrl (Proxy :: Proxy User) $ pathInfo req)
 
     liftIO $ either (pure . reportParseError)
                     (goUpdateUser conn userId)

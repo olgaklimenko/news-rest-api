@@ -33,6 +33,12 @@ data HandlerEnv = HandlerEnv {
 newtype MonadHandler a = MonadHandler {runMonadHandler :: ReaderT HandlerEnv IO a}
   deriving (Functor, Applicative, Monad, MonadIO, MonadReader HandlerEnv)
 
+class DetailRoute entity where
+  pathName :: Proxy entity -> T.Text
+  getIdFromUrl :: Proxy entity -> [T.Text] -> Either String T.Text
+  getIdFromUrl _ ["api", pathName, eId] = Right eId
+  getIdFromUrl _ path = Left $ "incorrect_data" <> show (mconcat path)
+
 runHandler :: C.Config -> Request -> P.Connection -> MonadHandler a -> IO a
 runHandler conf req conn handler = runReaderT (runMonadHandler handler) env
   where env = HandlerEnv conf req conn
@@ -70,17 +76,6 @@ list serialize = do
   pure $ responseLBS status200
                      [("Content-Type", "application/json")]
                      entitiesJSON
-
-
-class DetailRoute entity where
-  pathName :: Proxy entity -> T.Text
-  getIdFromUrl :: Proxy entity -> [T.Text] -> Either String T.Text
-  getIdFromUrl _ ["api", pathName, eId] = Right eId
-  getIdFromUrl _ path = Left $ "incorrect_data" <> show (mconcat path)
-
-getCategoryIdFromUrl :: [T.Text] -> Either String T.Text
-getCategoryIdFromUrl ["api", "categories", categoryId] = Right categoryId
-getCategoryIdFromUrl path = Left $ "incorrect_data" <> show (mconcat path)
 
 remove :: (Persistent entity, DetailRoute entity) => Proxy entity -> Handler
 remove entityType = do

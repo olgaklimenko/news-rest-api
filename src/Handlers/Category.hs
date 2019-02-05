@@ -21,7 +21,7 @@ import           Serializers.Category
 import           Data.Maybe
 import           Server.Config
 import           Server.Pagination
-
+import           Data.Proxy
 
 createCategoryHandler :: Handler
 createCategoryHandler = do
@@ -46,9 +46,11 @@ getCategoryWithParentsHandler :: Handler
 getCategoryWithParentsHandler = do
     conn <- asks hConn
     req  <- asks hRequest
-    either invalidIdResponse
-           (successResponse conn)
-           (getCategoryIdFromUrl (pathInfo req) >>= textToInteger)
+    either
+        invalidIdResponse
+        (successResponse conn)
+        (getIdFromUrl (Proxy :: Proxy Category) (pathInfo req) >>= textToInteger
+        )
   where
     successResponse conn categoryId = do
         categoriesList <- liftIO $ getCategoryWithParents conn (Just categoryId)
@@ -68,10 +70,11 @@ updateCategoryHandler :: Handler
 updateCategoryHandler = do
     conn <- asks hConn
     req  <- asks hRequest
-    either invalidIdResponse
-           (successResponse req conn)
-           (getCategoryIdFromUrl (pathInfo req) >>= textToInteger)
-
+    either
+        invalidIdResponse
+        (successResponse req conn)
+        (getIdFromUrl (Proxy :: Proxy Category) (pathInfo req) >>= textToInteger
+        )
   where
     successResponse req conn categoryId = do
         body <- liftIO $ requestBody req
