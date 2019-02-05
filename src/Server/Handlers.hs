@@ -72,17 +72,27 @@ list serialize = do
                      entitiesJSON
 
 
+class DetailRoute entity where
+  pathName :: Proxy entity -> T.Text
+  getIdFromUrl :: Proxy entity -> [T.Text] -> Either String T.Text
+  getIdFromUrl _ ["api", pathName, eId] = Right eId
+  getIdFromUrl _ path = Left $ "incorrect_data" <> (show $ mconcat path)
+
 getCategoryIdFromUrl :: [T.Text] -> Either String T.Text
 getCategoryIdFromUrl ["api", "categories", categoryId] = Right categoryId
 getCategoryIdFromUrl path = Left $ "incorrect_data" <> (show $ mconcat path)
 
-remove :: (Persistent entity) => Proxy entity -> Handler
+remove
+  :: (Persistent entity, DetailRoute entity)
+  => Proxy entity
+  -> Handler
 remove entityType = do
   conn <- asks hConn
   req  <- asks hRequest
-  either invalidIdResponse
-         (successResponse conn)
-         (getCategoryIdFromUrl (pathInfo req) >>= textToInteger)
+  either
+    invalidIdResponse
+    (successResponse conn)
+    (getIdFromUrl entityType (pathInfo req) >>= textToInteger)
  where
   successResponse conn categoryId = do
     deleted <- liftIO $ delete entityType conn categoryId

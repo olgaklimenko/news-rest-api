@@ -10,6 +10,7 @@ import qualified Data.Text                     as T
 import           Server.Database
 import           Server.Pagination
 import           Database.PostgreSQL.Simple
+import           Server.Handlers
 
 data Tag = Tag {
     tagId :: Integer,
@@ -37,3 +38,6 @@ instance ToRow TagRaw where
 instance Persistent Tag where
     tableName _ = "tags"
     deleteFilterField _ = "tag_id"
+
+instance DetailRoute Tag where
+    pathName _ = "tags"

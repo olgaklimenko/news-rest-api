@@ -9,7 +9,9 @@ import           Database.PostgreSQL.Simple.ToField
 import           Data.Text                     as T
 import           Server.Database
 import           Server.Pagination
+import           Server.Handlers
 import           Database.PostgreSQL.Simple
+
 data Category = Category {
     categoryId :: Integer,
     categoryName :: T.Text,
@@ -36,3 +38,6 @@ instance ToRow Category where
 instance Persistent Category where
     tableName _ = "categories"
     deleteFilterField _ = "category_id"
+
+instance DetailRoute Category where
+    pathName _ = "categories"

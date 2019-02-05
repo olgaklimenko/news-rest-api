@@ -10,6 +10,7 @@ import           Data.Time
 import           Database.PostgreSQL.Simple
 import           Server.Database
 import           Server.Pagination
+import           Server.Handlers
 
 data User = User {
   userId :: Integer,
@@ -38,3 +39,6 @@ data UserRawPartial = UserRawPartial {
 instance Persistent User where
   tableName _ = "users"
   deleteFilterField _ = "user_id"
+
+instance DetailRoute User where
+  pathName _ = "users"

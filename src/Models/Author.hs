@@ -14,6 +14,7 @@ import           Database.PostgreSQL.Simple
 import           Data.Proxy
 import           Models.User
 import           GHC.Int
+import           Server.Handlers
 
 data Author = Author {
   authorId :: Integer,
@@ -49,12 +50,14 @@ instance Persistent (Author, User) where
   deleteFilterField _ = "author_id"
 
   delete :: Proxy entity -> Connection -> Integer -> IO GHC.Int.Int64
-  delete _ conn eId = 
-    execute conn deleteQuery [eId]
+  delete _ conn eId = execute conn deleteQuery [eId]
    where
-    deleteQuery =
-      "DELETE FROM users \
+    deleteQuery
+      = "DELETE FROM users \
       \WHERE EXISTS \
       \(SELECT * FROM authors \
       \WHERE authors.user_id = users.user_id \
       \AND authors.author_id = ?)"
+
+instance DetailRoute (Author, User) where
+  pathName _ = "authors"
