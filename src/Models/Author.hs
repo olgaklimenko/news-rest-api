@@ -49,11 +49,12 @@ instance Persistent (Author, User) where
   deleteFilterField _ = "author_id"
 
   delete :: Proxy entity -> Connection -> Integer -> IO GHC.Int.Int64
-  delete _ conn eId = execute conn deleteQuery [eId]
+  delete _ conn eId = 
+    execute conn deleteQuery [eId]
    where
-    getUserIdQuery = 
-      "SELECT user_id FROM authors where author_id=?"
-    deleteAuthorQuery =
-      "DELETE FROM authors where author_id=?"
-    deleteUserQuery =
-      "DELETE FROM users where user_id=?"
+    deleteQuery =
+      "DELETE FROM users \
+      \WHERE EXISTS \
+      \(SELECT * FROM authors \
+      \WHERE authors.user_id = users.user_id \
+      \AND authors.author_id = ?)"
