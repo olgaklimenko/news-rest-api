@@ -6,9 +6,11 @@ module Serializers.Category where
 
 import           Data.Aeson
 import qualified Data.Text                     as T
-import           Data.Time
-import           Models.Category
-import           Data.Functor.Identity
+import           Data.Functor.Identity          ( Identity(..) )
+import           Models.Category                ( Category(..)
+                                                , CategoryRaw(..)
+                                                , CategoryRawPartial(..)
+                                                )
 
 data CategoryRequestT f = CategoryRequestT {
   categoryRequestName :: f T.Text,
@@ -101,4 +103,4 @@ requestToUpdateCategory (UpdateCategoryRequest CategoryRequestT { categoryReques
   = CategoryRawPartial { crpName = name, crpParentId = pId }
 requestToUpdateCategory (UpdateCategoryRequest CategoryRequestT { categoryRequestName = name, categoryRequestParentId = Nothing })
   = CategoryRawPartial { crpName = name, crpParentId = Nothing }
--- TODO: Use join from monad
+-- TODO: Use join monad

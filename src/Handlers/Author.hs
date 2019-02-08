@@ -18,6 +18,10 @@ import           Server.Config
 import           Server.Pagination
 import           Control.Monad.Reader
 import           Control.Monad.IO.Class
+import           Data.Proxy
+import           Models.Author                  ( Author )
+import           Models.User                    ( User )
+import           Server.Helpers                 ( textToInteger )
 
 createAuthorHandler :: Handler
 createAuthorHandler = do
@@ -32,7 +36,7 @@ createAuthorHandler = do
   where
     createAuthor conn authorData = do
         (user, author) <- liftIO
-            $ addAuthorToDB conn (requestToAuthor authorData)
+            $ addAuthorToDB conn (requestToCreateAuthor authorData)
         let authorJSON = encode $ authorToResponse (author, user)
 
         pure $ responseLBS status200
@@ -42,3 +46,32 @@ createAuthorHandler = do
         status400
         [("Content-Type", "plain/text")]
         ("Parse error: " <> BC.pack err)
+
+updateAuthorHandler :: Handler
+updateAuthorHandler = do
+    conn <- asks hConn
+    req  <- asks hRequest
+    either
+        invalidIdResponse
+        (successResponse req conn)
+        (   getIdFromUrl (Proxy :: Proxy (Author, User)) (pathInfo req)
+        >>= textToInteger
+        )
+  where
+    successResponse req conn authorId = do
+        body <- liftIO $ requestBody req
+        let
+            aData =
+                eitherDecode $ LB.fromStrict body :: Either
+                        String
+                        UpdateAuthorRequest
+        either (pure . reportParseError) (updateAuthorFields conn) aData
+      where
+        updateAuthorFields conn aData = do
+            result <-
+                liftIO $ updateAuthor conn authorId $ requestToUpdateAuthor
+                    aData
+            let authorJSON = encode $ authorToResponse result
+            pure $ responseLBS status200
+                               [("Content-Type", "application/json")]
+                               authorJSON

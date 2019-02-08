@@ -29,6 +29,10 @@ data AuthorRaw = AuthorRaw {
   authorRawDescription :: T.Text
 }
 
+data AuthorRawPartial = AuthorRawPartial {
+  apDescription :: Maybe T.Text
+} 
+
 instance Persistent (Author, User) where
   tableName :: Proxy (Author, User) -> Query
   tableName _ = "authors"

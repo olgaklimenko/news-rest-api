@@ -38,3 +38,12 @@ getAuthorById conn aId = do
     = "SELECT  u.*, a.*  FROM authors AS a \
       \INNER JOIN users AS u \
       \ON u.user_id = a.user_id WHERE author_id=?"
+
+
+updateAuthor :: Connection -> Integer -> (UserRawPartial, AuthorRawPartial) -> IO (Author, User)
+updateAuthor conn aId (user, AuthorRawPartial {..}) = do 
+  (a : _) <- query conn updateAuthorQuery (apDescription, aId)
+  u <- updateUser conn (authorUserId a) user
+  pure (a, u)
+   where 
+    updateAuthorQuery ="UPDATE authors SET description=? WHERE author_id=? RETURNING author_id, user_id, description"

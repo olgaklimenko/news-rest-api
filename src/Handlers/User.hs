@@ -1,4 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
+
+
 module Handlers.User where
 
 import           Control.Monad.Reader
@@ -40,20 +42,23 @@ updateUserHandler :: Handler
 updateUserHandler = do
     req  <- asks hRequest
     conn <- asks hConn
-    body <- liftIO $ requestBody req
-    let updateUserData =
-            eitherDecode $ LB.fromStrict body :: Either String UpdateUserRequest
-        userId =
-            either error id (getIdFromUrl (Proxy :: Proxy User) $ pathInfo req)
-
-    liftIO $ either (pure . reportParseError)
-                    (goUpdateUser conn userId)
-                    updateUserData
+    either
+        invalidIdResponse
+        (successResponse req conn)
+        (getIdFromUrl (Proxy :: Proxy User) (pathInfo req) >>= textToInteger)
   where
-    goUpdateUser conn uid userData = do
-        let partial = requestToUpdateUser userData
-        user <- liftIO $ updateUser conn uid partial
-        let userJSON = encode $ userToResponse user
-        pure $ responseLBS status200
-                           [("Content-Type", "application/json")]
-                           userJSON
+    successResponse req conn uId = do
+        body <- liftIO $ requestBody req
+        let
+            uData =
+                eitherDecode $ LB.fromStrict body :: Either
+                        String
+                        UpdateUserRequest
+        either (pure . reportParseError) goUpdateUser uData
+      where
+        goUpdateUser uData = do
+            user <- liftIO $ updateUser conn uId $ requestToUpdateUser uData
+            let userJSON = encode $ userToResponse user
+            pure $ responseLBS status200
+                               [("Content-Type", "application/json")]
+                               userJSON
