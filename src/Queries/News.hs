@@ -66,22 +66,31 @@ updateNews conn nId (news, tags) = do
 renewNewsTagsRelations :: Connection -> Integer -> [Integer] -> IO [NewsTag]
 renewNewsTagsRelations conn nId tagsIds = do
     existentRelations <- query conn listTagsNewsByNewsIdQuery [nId]
-    let 
-        existentTagsIds = ntTagId <$> existentRelations
-        rForCreate = (\\) tagsIds existentTagsIds
-        rForDelete = (\\) existentTagsIds tagsIds
-
-    deleted            <- delRel rForDelete
-    created            <- createRel rForCreate :: IO [NewsTag]
-    tagsIdsAfterUpdate <- query conn listTagsNewsByNewsIdQuery [nId]
-    pure tagsIdsAfterUpdate
+    let existentTagsIds = ntTagId <$> existentRelations
+        rForCreate      = (\\) tagsIds existentTagsIds
+        rForDelete      = (\\) existentTagsIds tagsIds
+    case (rForCreate, rForDelete) of
+        ([], []) -> query conn listTagsNewsByNewsIdQuery [nId] 
+        (c, []) -> do
+            createRel c :: IO [NewsTag]
+            tagsIdsAfterUpdate <- query conn listTagsNewsByNewsIdQuery [nId]
+            pure tagsIdsAfterUpdate
+        ([], d) -> do 
+            delRel d
+            tagsIdsAfterUpdate <- query conn listTagsNewsByNewsIdQuery [nId]
+            pure tagsIdsAfterUpdate
+        (c, d) -> do
+            createRel c :: IO [NewsTag]
+            delRel d
+            tagsIdsAfterUpdate <- query conn listTagsNewsByNewsIdQuery [nId]
+            pure tagsIdsAfterUpdate
   where
     delRel l = execute conn (deleteNewsTagsQuery l) ()
     createRel l = query conn (insertNewsTagsQuery nId l) ()
 
 listTagsNewsByNewsIdQuery :: Query
 listTagsNewsByNewsIdQuery =
-    "SELECT * FROM tags_news WHERE news_id=? RETURNING tag_id"
+    "SELECT * FROM tags_news WHERE news_id=?"
 
 insertNewsQuery :: Query
 insertNewsQuery =
@@ -91,9 +100,9 @@ insertNewsQuery =
 
 insertNewsTagsQuery :: Integer -> [Integer] -> Query
 insertNewsTagsQuery nId tIds =
-    "INSERT INTO tags_news(tag_id, news_id) VALUES"
+    "INSERT INTO tags_news(tag_id, news_id) VALUES "
         <> values
-        <> "RETURNING tag_id, news_id"
+        <> " RETURNING tag_id, news_id"
   where
     values  = textToQuery $ idsToText "" (integerToText <$> tIds)
     nIdText = integerToText nId
@@ -126,13 +135,12 @@ updateNewsQuery nId NewsRawPartial {..} =
         photoExpr   = maybe "" (\x -> "main_photo = '" <> x <> "'") nrpMainPhoto
         params =
             toQuery
-                . T.intercalate ","
+                . T.intercalate ", "
                 . filter (not . T.null)
                 $ [titleExpr, T.pack categoryExpr, contentExpr, photoExpr]
     in
         "UPDATE news SET "
         <> params
-        <> "WHERE news_id="
+        <> " WHERE news_id= "
         <> toQuery (integerToText nId)
-        <> "RETURNING news_id, title, date_created, author_id,\
-            \ category_id, content, main_photo"
+        <> " RETURNING news_id, title, date_created, author_id, category_id, content, main_photo;"
