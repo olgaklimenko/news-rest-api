@@ -81,7 +81,7 @@ updateCategoryHandler = do
         let categoryData =
                 eitherDecode $ LB.fromStrict body :: Either
                         String
-                        UpdateCategoryRequest
+                        UpdateCategoryRequest  --TODO: can't use proxy entity for signature
         either (pure . reportParseError)
                (updateCategoryFields conn)
                categoryData

@@ -57,8 +57,8 @@ instance ToJSON NewsResponse where
         ]
 
 
-requestToNews :: CreateNewsRequest -> (NewsRaw, NewsTagsRaw)
-requestToNews (CreateNewsRequest NewsRequestT {..}) =
+requestToCreateNews :: CreateNewsRequest -> (NewsRaw, NewsTagsRaw)
+requestToCreateNews (CreateNewsRequest NewsRequestT {..}) =
     ( NewsRaw (runIdentity nrTitle)
               (runIdentity nrAuthorId)
               (runIdentity nrCategoryId)
@@ -67,15 +67,44 @@ requestToNews (CreateNewsRequest NewsRequestT {..}) =
     , NewsTagsRaw (runIdentity nrTags)
     )
 
+newtype UpdateNewsRequest = UpdateNewsRequest (NewsRequestT Maybe)
+
+instance FromJSON UpdateNewsRequest where
+    parseJSON = withObject "UpdateNewsRequest" $ \v ->
+        fmap UpdateNewsRequest
+            $   NewsRequestT
+            <$> v
+            .:? "title"
+            <*> v
+            .:? "author"
+            <*> v
+            .:? "category"
+            <*> v
+            .:? "content"
+            <*> v
+            .:? "main_photo"
+            <*> v
+            .:? "tags"
+
+requestToUpdateNews :: UpdateNewsRequest -> (NewsRawPartial, NewsTagsPartialRaw)
+requestToUpdateNews (UpdateNewsRequest NewsRequestT {..}) =
+    ( NewsRawPartial { nrpTitle      = nrTitle
+                     , nrpCategoryId = nrCategoryId
+                     , nrpContent    = nrContent
+                     , nrpMainPhoto  = nrMainPhoto
+                     }
+    , NewsTagsPartialRaw { ntrpTagIds = nrTags }
+    )
+
 newsToResponse :: (News, [Tag], [Category], (User, Author)) -> NewsResponse
-newsToResponse (News {..}, tags, categories, (user,author)) = NewsResponse
+newsToResponse (News {..}, tags, categories, (user, author)) = NewsResponse
     { cnrTitle     = newsTitle
     , cnrAuthor    = authorResp (author, user)
     , cnrCategory  = categoryResp categories
     , cnrContent   = newsContent
     , cnrMainPhoto = newsMainPhoto
     , cnrTags      = tagsResp tags
-    }  where 
-        authorResp = authorToResponse
-        categoryResp (x:xs) = categoriesToNestedCategoryResponse x xs
-        tagsResp tags = tagToResponse <$> tags 
+    }  where
+    authorResp = authorToResponse
+    categoryResp (x : xs) = categoriesToNestedCategoryResponse x xs
+    tagsResp tags = tagToResponse <$> tags

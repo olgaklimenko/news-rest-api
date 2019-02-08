@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Models.News where
 
@@ -7,6 +8,7 @@ import           Database.PostgreSQL.Simple.ToRow
 import           Database.PostgreSQL.Simple.ToField
 import           Data.Text                     as T
 import           Data.Time
+import Server.Handlers 
 
 data News = News {
   newsId :: Integer,
@@ -41,6 +43,13 @@ data NewsRaw = NewsRaw {
   newsRawMainPhoto :: T.Text
 }
 
+data NewsRawPartial = NewsRawPartial {
+  nrpTitle :: Maybe T.Text,
+  nrpCategoryId :: Maybe Integer,
+  nrpContent :: Maybe T.Text,
+  nrpMainPhoto :: Maybe T.Text
+}
+
 data NewsTag = NewsTag {
     ntTagId :: Integer,
     ntNewsId :: Integer
@@ -50,7 +59,13 @@ data NewsTagsRaw = NewsTagsRaw {
   ntrTagIds :: [Integer]
 }
 
+data NewsTagsPartialRaw = NewsTagsPartialRaw {
+  ntrpTagIds :: Maybe [Integer]
+}
+
 instance FromRow NewsTag where
   fromRow =
     NewsTag <$> field <*> field
   
+instance DetailRoute News where
+  pathName _ = "news"
