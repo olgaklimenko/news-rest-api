@@ -71,19 +71,16 @@ renewNewsTagsRelations conn nId tagsIds = do
         rForDelete      = (\\) existentTagsIds tagsIds
     case (rForCreate, rForDelete) of
         ([], []) -> query conn listTagsNewsByNewsIdQuery [nId] 
-        (c, []) -> do
+        (c, []) -> do 
             createRel c :: IO [NewsTag]
-            tagsIdsAfterUpdate <- query conn listTagsNewsByNewsIdQuery [nId]
-            pure tagsIdsAfterUpdate
+            query conn listTagsNewsByNewsIdQuery [nId]
         ([], d) -> do 
             delRel d
-            tagsIdsAfterUpdate <- query conn listTagsNewsByNewsIdQuery [nId]
-            pure tagsIdsAfterUpdate
+            query conn listTagsNewsByNewsIdQuery [nId]
         (c, d) -> do
             createRel c :: IO [NewsTag]
             delRel d
-            tagsIdsAfterUpdate <- query conn listTagsNewsByNewsIdQuery [nId]
-            pure tagsIdsAfterUpdate
+            query conn listTagsNewsByNewsIdQuery [nId]
   where
     delRel l = execute conn (deleteNewsTagsQuery l) ()
     createRel l = query conn (insertNewsTagsQuery nId l) ()

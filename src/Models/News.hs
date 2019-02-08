@@ -1,14 +1,27 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Models.News where
 
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.ToRow
+import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.ToField
 import           Data.Text                     as T
 import           Data.Time
-import Server.Handlers 
+import           Server.Handlers
+import           Server.Database
+import           Models.Category                ( Category )
+import           Models.Tag                     ( Tag )
+import           Models.Author                  ( Author )
+import           Models.User                    ( User )
+import           Data.Proxy
+import           Server.Pagination              ( Limit
+                                                , Offset
+                                                )
+import           Server.Helpers                 ( inductiveTupleToTuple )
 
 data News = News {
   newsId :: Integer,
@@ -64,8 +77,28 @@ data NewsTagsPartialRaw = NewsTagsPartialRaw {
 }
 
 instance FromRow NewsTag where
-  fromRow =
-    NewsTag <$> field <*> field
-  
+  fromRow = NewsTag <$> field <*> field
+
 instance DetailRoute News where
   pathName _ = "news"
+
+-- instance Persistent (News, [Tag], [Category], (User, Author)) where
+--   tableName :: Proxy (News, [Tag], [Category], (User, Author)) -> Query
+--   tableName _ = "news"
+
+--   select :: Connection -> (Limit, Offset) -> IO [(News, [Tag], [Category], (User, Author))]
+--   select conn (limit, offset) = do
+--     news <- query conn newsQuery ()
+    
+--     pure undefined
+--    where
+--     newsQuery = "SELECT * FROM news LIMIT ? OFFSET ?"
+--     newsComponents news = do
+--       tagsIds <- query conn listTagsNewsByNewsIdQuery [newsId n]
+--       tags <- query conn (selectTagsFilteredByIdQuery tagIds) ()
+--       categories     <- getCategoryWithParents conn (Just $ newsCategoryId news)
+--       userWithAuthor <- getAuthorById conn (newsAuthorId news)
+--       pure (news, tags, categories, userWithAuthor)
+
+--   deleteFilterField :: Proxy entity -> Query
+--   deleteFilterField _ = "news_id"
