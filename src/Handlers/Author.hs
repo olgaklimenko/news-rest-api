@@ -71,6 +71,7 @@ updateAuthorHandler = do
             result <-
                 liftIO $ updateAuthor conn authorId $ requestToUpdateAuthor
                     aData
+            
             let authorJSON = encode $ authorToResponse result
             pure $ responseLBS status200
                                [("Content-Type", "application/json")]

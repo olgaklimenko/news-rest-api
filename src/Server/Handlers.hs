@@ -19,8 +19,10 @@ import           Server.Pagination
 import           Server.Database
 import           Server.Config
 import           Server.Helpers                 ( textToInteger )
+import           Server.Logger
 import           GHC.Int
 import           Data.Proxy
+import qualified Control.Logger.Simple as Log
 
 type Handler = MonadHandler Response
 
@@ -32,6 +34,12 @@ data HandlerEnv = HandlerEnv {
 
 newtype MonadHandler a = MonadHandler {runMonadHandler :: ReaderT HandlerEnv IO a}
   deriving (Functor, Applicative, Monad, MonadIO, MonadReader HandlerEnv)
+
+instance Logger MonadHandler where
+  logDebug = liftIO . logDebug
+  logInfo  = liftIO . logInfo
+  logWarn  = liftIO . logWarn
+  logError = liftIO . logError
 
 class DetailRoute entity where
   pathName :: Proxy entity -> T.Text
@@ -85,8 +93,9 @@ remove entityType = do
          (successResponse conn)
          (getIdFromUrl entityType (pathInfo req) >>= textToInteger)
  where
-  successResponse conn categoryId = do
-    deleted <- liftIO $ delete entityType conn categoryId
+  successResponse conn eId = do
+    logDebug $ "Delete " <> T.pack (show entityType) <> " " <> T.pack (show eId)
+    deleted <- liftIO $ delete entityType conn eId
     case deleted of
       0 -> notFoundResponse
       _ ->

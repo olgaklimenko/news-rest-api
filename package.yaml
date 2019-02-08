@@ -33,6 +33,7 @@ dependencies:
 - bytestring
 - configurator
 - mtl
+- simple-logger
 
 library:
   source-dirs: src
