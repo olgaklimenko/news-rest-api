@@ -1,10 +1,13 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Models.Comment where
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.ToRow
 import           Database.PostgreSQL.Simple.ToField
-import           Data.Text                     as T
+import qualified Data.Text                     as T
+import           Server.Database                ( Persistent(..) )
+import           Server.Handlers                ( DetailRoute(..) )
 
 data Comment = Comment {
     commentId :: Integer,
@@ -23,3 +26,10 @@ instance FromRow Comment where
 instance ToRow Comment where
     toRow Comment {..} =
         [toField commentId, toField commentContent, toField commentNewsId]
+
+instance Persistent Comment where
+    tableName _ = "commentaries"
+    deleteFilterField _ = "commentary_id"
+
+instance DetailRoute Comment where
+    pathName _ = "comments"
