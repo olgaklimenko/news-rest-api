@@ -7,10 +7,11 @@ import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.ToField
 import qualified Data.Text                     as T
 import           Data.Time
-import           Database.PostgreSQL.Simple
+import qualified Database.PostgreSQL.Simple    as PSQL
 import           Server.Database
 import           Server.Pagination
 import           Server.Handlers
+import           GHC.Int
 
 data User = User {
   userId :: Integer,

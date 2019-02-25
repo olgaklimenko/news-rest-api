@@ -59,3 +59,4 @@ class Persistent entity where
   delete :: Proxy entity  -> Connection -> Integer -> IO GHC.Int.Int64
   delete _ conn eId = execute conn deleteQuery [eId]
     where deleteQuery = "DELETE FROM " <> tableName (Proxy :: Proxy entity) <> " WHERE " <> deleteFilterField (Proxy :: Proxy entity) <> "=?"
+
